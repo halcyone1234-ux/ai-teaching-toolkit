@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-os="win">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>用 AI 做出自己的教學工具｜中興大學教師成長社群</title>
+<meta name="description" content="從安裝 Claude Code、把影片變成教材，到用 Git 把成果放上網路。講義與製作範例一次收齊。">
+<meta name="theme-color" content="#f6f3ec">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f6f3ec;
+    --surface:#fffdf8;
+    --surface-2:#efeadf;
+    --ink:#14283f;
+    --ink-dim:#566479;
+    --line:#ddd5c4;
+    --accent:#d97a12;
+    --accent-ink:#ffffff;
+    --accent-soft:#fbe9d0;
+    --green:#2f7d6b;
+    --green-soft:#dcefe9;
+    --term-bg:#14283f;
+    --term-ink:#e9eef6;
+    --term-dim:#8fa3bf;
+    --shadow:0 1px 2px rgba(20,40,63,.05), 0 14px 34px -18px rgba(20,40,63,.28);
+    --serif:"Noto Serif TC","Source Han Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei","Segoe UI",system-ui,sans-serif;
+    --mono:"Cascadia Mono","Cascadia Code",Consolas,"SFMono-Regular",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0e1a2a;
+      --surface:#152538;
+      --surface-2:#1b2f47;
+      --ink:#eef2f8;
+      --ink-dim:#9db0cb;
+      --line:#29405f;
+      --accent:#f0a53e;
+      --accent-ink:#1b1305;
+      --accent-soft:#3a2a10;
+      --green:#5cc4aa;
+      --green-soft:#173a33;
+      --term-bg:#091320;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 36px -18px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0e1a2a;
+    --surface:#152538;
+    --surface-2:#1b2f47;
+    --ink:#eef2f8;
+    --ink-dim:#9db0cb;
+    --line:#29405f;
+    --accent:#f0a53e;
+    --accent-ink:#1b1305;
+    --accent-soft:#3a2a10;
+    --green:#5cc4aa;
+    --green-soft:#173a33;
+    --term-bg:#091320;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 36px -18px rgba(0,0,0,.7);
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-padding-top:76px}
+  @media (prefers-reduced-motion:no-preference){ html{scroll-behavior:smooth} }
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--line) 1px, transparent 1px) 0 0/100% 40px,
+      var(--paper);
+    background-attachment:local;
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16px;line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-1;
+    background:var(--paper);opacity:.86;
+  }
+  a{color:inherit}
+  h1,h2,h3{margin:0;text-wrap:balance}
+  p{margin:0}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+  main{overflow-x:clip}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 clamp(16px,4vw,32px)}
+  .mono{font-family:var(--mono)}
+
+  /* ---------- top bar ---------- */
+  .top{
+    position:sticky;top:0;z-index:30;
+    background:color-mix(in srgb, var(--paper) 90%, transparent);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .top-in{
+    display:flex;align-items:center;gap:14px;height:58px;
+  }
+  .brand{
+    font-family:var(--serif);font-weight:900;font-size:1rem;
+    text-decoration:none;white-space:nowrap;flex:none;
+  }
+  .brand span{color:var(--accent)}
+  .jump{
+    display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .jump::-webkit-scrollbar{display:none}
+  .jump a{
+    flex:none;text-decoration:none;font-size:.85rem;font-weight:600;
+    color:var(--ink-dim);padding:6px 11px;border-radius:999px;white-space:nowrap;
+  }
+  .jump a:hover{background:var(--surface-2);color:var(--ink)}
+  .theme{
+    flex:none;border:1px solid var(--line);background:var(--surface);
+    color:var(--ink-dim);border-radius:999px;padding:6px 12px;
+    font:600 .78rem var(--sans);cursor:pointer;
+  }
+  .theme:hover{color:var(--accent);border-color:var(--accent)}
+
+  /* ---------- hero ---------- */
+  .hero{
+    display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);
+    gap:clamp(24px,5vw,64px);align-items:center;
+    padding:clamp(40px,7vw,84px) 0 clamp(36px,6vw,64px);
+  }
+  .eyebrow{
+    font:700 .76rem var(--mono);letter-spacing:.14em;color:var(--accent);
+    text-transform:uppercase;margin-bottom:16px;
+  }
+  .hero h1{
+    font-family:var(--serif);font-weight:900;
+    font-size:clamp(2.1rem,5.2vw,3.7rem);line-height:1.18;letter-spacing:.01em;
+  }
+  .hero h1 em{
+    font-style:normal;
+    background:linear-gradient(transparent 62%, var(--accent-soft) 62%);
+  }
+  .lede{
+    margin-top:20px;font-size:1.08rem;color:var(--ink-dim);max-width:34em;
+  }
+  .who{
+    margin-top:22px;display:flex;flex-wrap:wrap;gap:8px;
+  }
+  .chip{
+    font-size:.8rem;padding:5px 12px;border-radius:999px;
+    border:1px solid var(--line);background:var(--surface);color:var(--ink-dim);
+  }
+  .chip b{color:var(--ink);font-weight:700}
+
+  .os{
+    margin-top:30px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .os-label{font-size:.88rem;font-weight:700}
+  .seg{
+    display:inline-flex;padding:4px;border-radius:12px;
+    background:var(--surface-2);border:1px solid var(--line);
+  }
+  .seg button{
+    border:0;background:transparent;color:var(--ink-dim);cursor:pointer;
+    font:700 .9rem var(--sans);padding:8px 18px;border-radius:9px;
+  }
+  .seg button[aria-pressed="true"]{
+    background:var(--ink);color:var(--paper);
+  }
+  .os-note{font-size:.8rem;color:var(--ink-dim);flex-basis:100%}
+
+  .stack{position:relative;aspect-ratio:1/1;max-width:440px;width:100%;justify-self:end}
+  .stack a{
+    position:absolute;display:block;border-radius:10px;overflow:hidden;
+    box-shadow:var(--shadow);border:1px solid var(--line);background:var(--surface);
+  }
+  .stack img{display:block;width:100%;height:100%;object-fit:cover}
+  .stack .s1{width:82%;top:4%;left:0;transform:rotate(-3deg);aspect-ratio:16/9}
+  .stack .s2{width:46%;right:0;top:26%;transform:rotate(4deg);aspect-ratio:3/4;z-index:2}
+  .stack .s3{width:66%;left:6%;bottom:2%;transform:rotate(1.5deg);aspect-ratio:16/9}
+  @media (prefers-reduced-motion:no-preference){
+    .stack a{transition:transform .25s ease}
+    .stack a:hover{transform:rotate(0) scale(1.03);z-index:3}
+  }
+
+  /* ---------- route ---------- */
+  .route{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+    border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    background:var(--surface);box-shadow:var(--shadow);
+  }
+  .route a{
+    text-decoration:none;padding:20px 20px 22px;position:relative;
+    border-left:1px solid var(--line);
+  }
+  .route a:first-child{border-left:0}
+  .route a:hover{background:var(--surface-2)}
+  .route .n{font:700 .78rem var(--mono);color:var(--accent);letter-spacing:.08em}
+  .route h3{font-size:1.02rem;margin:4px 0 4px}
+  .route p{font-size:.84rem;color:var(--ink-dim);line-height:1.55}
+  .route a:not(:last-child)::after{
+    content:"→";position:absolute;right:-11px;top:50%;transform:translateY(-50%);
+    width:22px;height:22px;border-radius:50%;
+    background:var(--paper);border:1px solid var(--line);
+    font-size:.72rem;line-height:20px;text-align:center;color:var(--ink-dim);z-index:1;
+  }
+
+  /* ---------- sections ---------- */
+  section.block{padding:clamp(48px,7vw,84px) 0 0}
+  .head{
+    display:grid;grid-template-columns:auto 1fr;gap:4px 22px;align-items:end;
+    margin-bottom:26px;
+  }
+  .num{
+    grid-row:span 2;
+    font-family:var(--serif);font-weight:900;
+    font-size:clamp(3.2rem,8vw,5.4rem);line-height:.9;
+    color:transparent;-webkit-text-stroke:1.5px var(--accent);
+  }
+  .head h2{
+    font-family:var(--serif);font-weight:900;
+    font-size:clamp(1.5rem,3.4vw,2.15rem);line-height:1.25;
+  }
+  .head p{color:var(--ink-dim);font-size:.98rem;max-width:44em}
+
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .pad{padding:clamp(20px,3vw,32px)}
+  .split .pad + .pad{border-left:1px solid var(--line);background:var(--surface-2)}
+  .card h3{font-size:1.2rem;margin-bottom:6px}
+  .card .sub{color:var(--ink-dim);font-size:.93rem;margin-bottom:16px}
+
+  ul.ticks{list-style:none;margin:0 0 22px;padding:0;display:grid;gap:8px}
+  ul.ticks li{
+    position:relative;padding-left:28px;font-size:.93rem;line-height:1.6;
+  }
+  ul.ticks li::before{
+    content:"";position:absolute;left:0;top:.62em;
+    width:8px;height:8px;border-radius:2px;background:var(--accent);
+  }
+
+  .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    text-decoration:none;font-weight:700;font-size:.93rem;
+    padding:11px 20px;border-radius:10px;
+    background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent);
+  }
+  .btn:hover{filter:brightness(1.07)}
+  .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  .btn.ghost:hover{border-color:var(--ink-dim);filter:none}
+  .alt{font-size:.85rem;color:var(--ink-dim)}
+  .alt a{text-underline-offset:3px}
+
+  /* OS-dependent visibility */
+  [data-os="mac"] .only-win,
+  [data-os="win"] .only-mac{display:none !important}
+
+  /* terminal */
+  .term{
+    background:var(--term-bg);color:var(--term-ink);
+    border-radius:10px;overflow:hidden;
+  }
+  .term + .term{margin-top:12px}
+  .term-bar{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:7px 10px 7px 14px;background:rgba(255,255,255,.05);
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .term-bar span{
+    font:700 .68rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--term-dim);
+  }
+  .copy{
+    border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);
+    color:var(--term-ink);border-radius:6px;padding:3px 10px;
+    font:600 .74rem var(--sans);cursor:pointer;
+  }
+  .copy:hover{background:rgba(255,255,255,.16)}
+  .term pre{
+    margin:0;padding:13px 16px 15px;font:400 .86rem/1.65 var(--mono);
+    white-space:pre-wrap;word-break:break-word;
+  }
+  .term pre .c{color:var(--term-dim)}
+  .kicker{
+    font:700 .72rem var(--mono);letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ink-dim);margin-bottom:12px;
+  }
+
+  /* flow (yt) */
+  .flow{display:grid;gap:10px;margin-bottom:16px}
+  .flow div{
+    display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;
+    background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:11px 14px;font-size:.9rem;line-height:1.55;
+  }
+  .flow b.i{
+    width:26px;height:26px;border-radius:7px;background:var(--green-soft);color:var(--green);
+    font:700 .8rem var(--mono);display:flex;align-items:center;justify-content:center;
+  }
+
+  /* deploy */
+  .steps{counter-reset:s;list-style:none;margin:0;padding:0;display:grid;gap:12px}
+  .steps li{counter-increment:s;display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px}
+  .steps li::before{
+    content:counter(s);
+    width:26px;height:26px;border-radius:50%;margin-top:2px;
+    border:1.5px solid var(--accent);color:var(--accent);
+    font:700 .78rem var(--mono);display:flex;align-items:center;justify-content:center;
+  }
+  .steps h4{margin:0 0 6px;font-size:.95rem}
+  .steps p{font-size:.86rem;color:var(--ink-dim);margin-bottom:8px}
+  .traps{
+    margin-top:20px;border:1px solid var(--line);border-radius:12px;overflow:hidden;
+    font-size:.88rem;background:var(--surface);
+  }
+  .traps div{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:14px;padding:10px 14px}
+  .traps div + div{border-top:1px solid var(--line)}
+  .traps b{font-weight:700}
+  .traps span{color:var(--ink-dim)}
+  .source{
+    margin-top:18px;font-size:.82rem;color:var(--ink-dim);
+    padding-top:14px;border-top:1px dashed var(--line);
+  }
+
+  /* showcase */
+  .show{display:grid;grid-template-columns:repeat(12,1fr);gap:20px}
+  .work{
+    grid-column:span 6;display:flex;flex-direction:column;
+    text-decoration:none;
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    overflow:hidden;box-shadow:var(--shadow);
+  }
+  .work.wide{grid-column:span 12;flex-direction:row}
+  .work:hover{border-color:var(--accent)}
+  .work figure{margin:0;background:var(--surface-2);overflow:hidden;flex:none}
+  .work figure img{display:block;width:100%;height:100%;object-fit:cover}
+  .work.wide figure{width:56%}
+  .work .fig-169{aspect-ratio:16/9}
+  .work .fig-comic{aspect-ratio:16/9}
+  .work .fig-comic img{object-position:50% 12%}
+  .work .body{padding:20px 22px 22px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .tag{
+    align-self:flex-start;font:700 .7rem var(--mono);letter-spacing:.08em;
+    padding:3px 10px;border-radius:999px;background:var(--green-soft);color:var(--green);
+  }
+  .work h3{font-size:1.18rem;line-height:1.4}
+  .work p{font-size:.9rem;color:var(--ink-dim);line-height:1.65}
+  .work .go{margin-top:auto;padding-top:8px;font-weight:700;font-size:.9rem;color:var(--accent)}
+  .facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+  .facts span{
+    font-size:.74rem;padding:2px 9px;border-radius:6px;
+    background:var(--surface-2);color:var(--ink-dim);
+  }
+  .work .mini{
+    padding:18px 20px;background:var(--term-bg);color:var(--term-ink);
+    font:400 .8rem/1.7 var(--mono);aspect-ratio:16/9;
+    display:flex;flex-direction:column;justify-content:center;gap:2px;
+  }
+  .work .mini .c{color:var(--term-dim)}
+  .work .mini .a{color:#f0a53e}
+
+  .work .mini.board{
+    background:#1f3b34;gap:12px;align-items:flex-start;padding:28px 30px;
+    box-shadow:inset 0 0 0 8px #6b4a2b;font-family:var(--sans);
+  }
+  .work .mini.board .bt{font:700 1.15rem var(--serif);color:#f4f1e6;letter-spacing:.04em}
+  .work .mini.board .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .work .mini.board .chips i{
+    font-style:normal;font-size:.78rem;padding:2px 10px;border-radius:999px;
+    border:1px dashed rgba(244,241,230,.6);color:#f4f1e6;
+  }
+  .work .mini.board .c{color:#b9cdc5;font-size:.78rem}
+
+  footer{
+    margin-top:clamp(56px,8vw,96px);padding:28px 0 56px;
+    border-top:1px solid var(--line);
+    color:var(--ink-dim);font-size:.84rem;
+  }
+  footer p + p{margin-top:4px}
+
+  @media (max-width:860px){
+    .hero{grid-template-columns:1fr}
+    .stack{justify-self:center;max-width:380px}
+    .route{grid-template-columns:1fr 1fr}
+    .route a{border-left:0;border-top:1px solid var(--line)}
+    .route a:nth-child(-n+2){border-top:0}
+    .route a:nth-child(even){border-left:1px solid var(--line)}
+    .route a::after{display:none}
+    .split{grid-template-columns:1fr}
+    .split .pad + .pad{border-left:0;border-top:1px solid var(--line)}
+    .work,.work.wide{grid-column:span 12;flex-direction:column}
+    .work.wide figure{width:100%}
+  }
+  @media (max-width:520px){
+    .brand{font-size:.92rem}
+    .theme{padding:6px 10px}
+    .head{grid-template-columns:1fr}
+    .num{grid-row:auto}
+    .traps div{grid-template-columns:1fr;gap:2px}
+    .btn{width:100%;justify-content:center}
+  }
+  @media print{
+    .top,.os,.copy{display:none}
+    body{background:#fff}
+    .card,.work,.route{box-shadow:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#top">AI <span>×</span> 教學工具箱</a>
+    <nav class="jump" aria-label="頁內導覽">
+      <a href="#start">01 開始使用</a>
+      <a href="#video">02 影片變教材</a>
+      <a href="#deploy">03 部署上線</a>
+      <a href="#showcase">04 成果展示</a>
+    </nav>
+    <button class="theme" id="themeBtn" type="button" aria-label="切換深色或淺色">深 / 淺</button>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+
+  <!-- ============ HERO ============ -->
+  <div class="hero">
+    <div>
+      <p class="eyebrow">國立中興大學教師成長社群 · AI 融入教學</p>
+      <h1>用 AI 做出<br><em>自己的教學工具</em></h1>
+      <p class="lede">不需要會寫程式。從安裝 Claude Code、把影片變成教材，到把成果放上網路讓學生打開——講義與製作範例都收在這一頁，照順序走就能開始。</p>
+      <div class="who">
+        <span class="chip">分享人 <b>王思永</b></span>
+        <span class="chip">生物產業管理研究所</span>
+        <span class="chip">2026.09.30</span>
+      </div>
+
+      <div class="os">
+        <span class="os-label" id="osLabel">我的電腦是</span>
+        <div class="seg" role="group" aria-labelledby="osLabel">
+          <button type="button" data-set-os="win" aria-pressed="true">Windows</button>
+          <button type="button" data-set-os="mac" aria-pressed="false">Mac</button>
+        </div>
+        <span class="os-note">選好之後，下面的講義連結與指令會自動換成對應的版本。</span>
+      </div>
+    </div>
+
+    <div class="stack" aria-hidden="true">
+      <a class="s1" href="slides/w01/index.html" tabindex="-1"><img src="assets/w01-cover.jpg" alt="" width="900" height="506"></a>
+      <a class="s3" href="slides/w01/index.html#27" tabindex="-1"><img src="assets/w01-map.jpg" alt="" width="900" height="506" loading="lazy"></a>
+      <a class="s2" href="https://halcyone1234-ux.github.io/three-crosses-comic/" tabindex="-1"><img src="assets/comic-cover.jpg" alt="" width="600" height="800"></a>
+    </div>
+  </div>
+
+  <!-- ============ ROUTE ============ -->
+  <nav class="route" aria-label="今天的路線">
+    <a href="#start">
+      <div class="n">01</div>
+      <h3>開始使用 AI</h3>
+      <p>安裝 Claude Code，學會每次開工的標準流程</p>
+    </a>
+    <a href="#video">
+      <div class="n">02</div>
+      <h3>影片變教材</h3>
+      <p>貼一個 YouTube 網址，整理出含畫面的重點</p>
+    </a>
+    <a href="#deploy">
+      <div class="n">03</div>
+      <h3>部署上線</h3>
+      <p>用 Git 與 GitHub Pages 免費取得公開網址</p>
+    </a>
+    <a href="#showcase">
+      <div class="n">04</div>
+      <h3>成果展示</h3>
+      <p>互動黑板、簡報、漫畫、推理遊戲的實際成品</p>
+    </a>
+  </nav>
+
+  <!-- ============ 01 ============ -->
+  <section class="block" id="start">
+    <div class="head">
+      <div class="num">01</div>
+      <h2>開始使用 AI：Claude Code 入門</h2>
+      <p>Claude Code 是在終端機裡運作的 AI 助手，可以直接讀寫電腦裡的檔案、幫你執行任務。今天所有成品都是用它做的。</p>
+    </div>
+
+    <div class="card split">
+      <div class="pad">
+        <h3>Claude Code 入門教學
+          <span class="only-win">（Windows）</span><span class="only-mac">（Mac）</span>
+        </h3>
+        <p class="sub">
+          <span class="only-win">簡報式講義，共 9 頁，全程在 PowerShell 操作。</span>
+          <span class="only-mac">簡報式講義，共 11 頁，全程在 Terminal 操作，含 Homebrew 備援方案。</span>
+        </p>
+        <ul class="ticks">
+          <li>一次性安裝，以及「裝好了但打 claude 沒反應」的解法</li>
+          <li>每次開始工作的標準流程</li>
+          <li>三種工作模式：Auto、Plan、Dangerous</li>
+          <li>權限提示說明表：哪些可以放心允許、哪些要看內容</li>
+          <li>常用斜線指令、快捷鍵、啟動參數，以及 Skills</li>
+        </ul>
+        <div class="actions">
+          <a class="btn only-win" href="handouts/claude-code-intro-slides.html">打開 Windows 版講義 →</a>
+          <a class="btn only-mac" href="handouts/claude-code-intro-slides-mac.html">打開 Mac 版講義 →</a>
+          <span class="alt only-win">用 Mac？<a href="handouts/claude-code-intro-slides-mac.html">Mac 版在這裡</a></span>
+          <span class="alt only-mac">用 Windows？<a href="handouts/claude-code-intro-slides.html">Windows 版在這裡</a></span>
+        </div>
+      </div>
+      <div class="pad">
+        <p class="kicker">先看一眼：安裝只要一行</p>
+        <div class="term only-win">
+          <div class="term-bar"><span>PowerShell</span><button class="copy" type="button" data-copy="irm https://claude.ai/install.ps1 | iex">複製</button></div>
+          <pre>irm https://claude.ai/install.ps1 | iex</pre>
+        </div>
+        <div class="term only-mac">
+          <div class="term-bar"><span>Terminal</span><button class="copy" type="button" data-copy="curl -fsSL https://claude.ai/install.sh | bash">複製</button></div>
+          <pre>curl -fsSL https://claude.ai/install.sh | bash</pre>
+        </div>
+        <div class="term">
+          <div class="term-bar"><span>之後每次開工</span><button class="copy" type="button" data-copy="claude">複製</button></div>
+          <pre><span class="c"># 先切到要工作的資料夾，再輸入</span>
+claude</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section class="block" id="video">
+    <div class="head">
+      <div class="num">02</div>
+      <h2>把 YouTube 影片變成教材</h2>
+      <p>多數影片摘要工具只抓聲音。這套流程連畫面上的投影片、圖表、字卡一起抓，讓 Claude 真的「看」影片。</p>
+    </div>
+
+    <div class="card split">
+      <div class="pad">
+        <h3>用 YouTube 影片做教材：完整安裝與使用教學
+          <span class="only-win">（Windows）</span><span class="only-mac">（Mac）</span>
+        </h3>
+        <p class="sub">給完全沒裝過任何工具的人，照著打大約 15–20 分鐘。需要先完成 01 的 Claude Code 安裝。</p>
+        <ul class="ticks">
+          <li>安裝 yt-dlp、ffmpeg、git 與 watch 插件</li>
+          <li>用 <span class="mono">/watch</span> 看整支影片，或只看指定的一段</li>
+          <li>常見問題排解表</li>
+          <li>影片沒有字幕時的兩種做法</li>
+          <li>實測案例：沒字幕的 19 分鐘影片，單靠畫面整理出重點</li>
+        </ul>
+        <div class="actions">
+          <a class="btn only-win" href="handouts/yt_video_teaching_guide.html">打開 Windows 版教學 →</a>
+          <a class="btn only-mac" href="handouts/yt_video_teaching_guide_mac.html">打開 Mac 版教學 →</a>
+          <span class="alt only-win">用 Mac？<a href="handouts/yt_video_teaching_guide_mac.html">Mac 版在這裡</a></span>
+          <span class="alt only-mac">用 Windows？<a href="handouts/yt_video_teaching_guide.html">Windows 版在這裡</a></span>
+        </div>
+      </div>
+      <div class="pad">
+        <p class="kicker">它自動幫你做的事</p>
+        <div class="flow">
+          <div><b class="i">1</b><span>用 <span class="mono">yt-dlp</span> 把影片下載下來</span></div>
+          <div><b class="i">2</b><span>用 <span class="mono">ffmpeg</span> 在畫面變化時截圖，等於抓下每一頁投影片</span></div>
+          <div><b class="i">3</b><span>取得逐字稿，連同截圖一起交給 Claude</span></div>
+        </div>
+        <div class="term">
+          <div class="term-bar"><span>Claude Code</span><button class="copy" type="button" data-copy="/watch 影片網址 你想問的問題">複製</button></div>
+          <pre>/watch 影片網址 你想問的問題</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section class="block" id="deploy">
+    <div class="head">
+      <div class="num">03</div>
+      <h2>放上網路：Git 與 GitHub Pages</h2>
+      <p>做好的網頁只在自己電腦裡，學生打不開。GitHub Pages 可以免費把它變成一個公開網址，而且自動附 HTTPS。</p>
+    </div>
+
+    <div class="card split">
+      <div class="pad">
+        <h3>UNIT 06｜GitHub Pages 免費上線</h3>
+        <p class="sub">外部教材《從零到上線：用 AI 做出自己的網站》的第 6 單元，Windows 不需要裝 WSL 也能照做。</p>
+        <ul class="ticks">
+          <li>Windows 三條路線：Git Bash、PowerShell、GitHub Desktop</li>
+          <li>三種站台型態，以及專案站台的路徑陷阱</li>
+          <li>設定推送權限：GitHub CLI、SSH 金鑰、Token</li>
+          <li>上線後才出現的問題排查表</li>
+          <li>自訂網域與 HTTPS</li>
+        </ul>
+        <div class="actions">
+          <a class="btn" href="https://bonmipang-2025.github.io/ai-web-course/unit-06-github-pages.html" target="_blank" rel="noopener">打開部署教學 ↗</a>
+          <a class="btn ghost" href="https://bonmipang-2025.github.io/ai-web-course/unit-05-git.html" target="_blank" rel="noopener">先補 Git 基礎 ↗</a>
+        </div>
+        <div class="traps" aria-label="最常踩到的三個坑">
+          <div><b>上線後整頁 404</b><span>根目錄要有 <span class="mono">index.html</span>，檔名大小寫要完全相符</span></div>
+          <div><b>有內容但沒樣式、圖片破圖</b><span>路徑不要用 <span class="mono">/</span> 開頭，改成相對路徑</span></div>
+          <div><b>改了卻沒更新</b><span>等 Actions 變綠燈，再按 Ctrl + Shift + R 強制重新整理</span></div>
+        </div>
+        <p class="source">教材來源：bonmipang-2025《<a href="https://bonmipang-2025.github.io/ai-web-course/" target="_blank" rel="noopener">從零到上線：用 AI 做出自己的網站</a>》。以上重點為該單元的摘要，完整內容請以原教材為準。</p>
+      </div>
+      <div class="pad">
+        <p class="kicker">最短路徑：五步上線</p>
+        <ol class="steps">
+          <li><div>
+            <h4>登入 GitHub（只做一次）</h4>
+            <div class="term"><div class="term-bar"><span>終端機</span><button class="copy" type="button" data-copy="gh auth login">複製</button></div><pre>gh auth login</pre></div>
+          </div></li>
+          <li><div>
+            <h4>在網站資料夾裡初始化</h4>
+            <p>確認資料夾根目錄有 index.html。</p>
+            <div class="term"><div class="term-bar"><span>終端機</span><button class="copy" type="button" data-copy="git init&#10;git branch -M main">複製</button></div><pre>git init
+git branch -M main</pre></div>
+          </div></li>
+          <li><div>
+            <h4>第一次提交</h4>
+            <div class="term"><div class="term-bar"><span>終端機</span><button class="copy" type="button" data-copy="git add .&#10;git commit -m &quot;feat: 初始版本&quot;">複製</button></div><pre>git add .
+git commit -m "feat: 初始版本"</pre></div>
+          </div></li>
+          <li><div>
+            <h4>建立遠端 repo 並推上去</h4>
+            <div class="term"><div class="term-bar"><span>終端機</span><button class="copy" type="button" data-copy="gh repo create my-site --public --source=. --remote=origin --push">複製</button></div><pre>gh repo create my-site --public --source=. --remote=origin --push</pre></div>
+          </div></li>
+          <li><div>
+            <h4>開啟 Pages</h4>
+            <p>到 repo 的 Settings → Pages，選 Deploy from a branch，分支選 main、資料夾選 root。等 1–3 分鐘就有網址。</p>
+          </div></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section class="block" id="showcase">
+    <div class="head">
+      <div class="num">04</div>
+      <h2>成果展示：實際做出來的東西</h2>
+      <p>以下都是用 AI 做出來的實際成品，點進去可以直接操作。</p>
+    </div>
+
+    <div class="show">
+      <a class="work wide" href="slides/w01/index.html">
+        <figure class="fig-169"><img src="assets/w01-cover.jpg" alt="量化研究法（上）第 1 週簡報封面" width="900" height="506" loading="lazy"></figure>
+        <div class="body">
+          <span class="tag">簡報 · 網頁版</span>
+          <h3>量化研究法（上）第 1 週｜先不要吃棉花糖</h3>
+          <p>一堂關於「數據怎麼騙人」的課。從棉花糖實驗談內生性的四張臉、資料結構與因果關係，最後帶出計量地圖。原本是 PDF，轉成網頁後用手機也能翻。</p>
+          <div class="facts"><span>51 頁</span><span>鍵盤與滑動翻頁</span><span>章節跳轉</span><span>全文搜尋</span><span>可下載 PDF</span></div>
+          <span class="go">開始瀏覽 →</span>
+        </div>
+      </a>
+
+      <a class="work" href="https://slido-board.onrender.com" target="_blank" rel="noopener">
+        <div class="mini board" aria-hidden="true">
+          <span class="bt">互動黑板 · Interactive Board</span>
+          <span class="chips"><i>文字雲</i><i>投票</i><i>測驗</i><i>競標</i><i>舉手</i></span>
+          <span class="c">學生掃 QR code 加入 → 老師端即時看到結果</span>
+        </div>
+        <div class="body">
+          <span class="tag">課堂互動軟體</span>
+          <h3>互動黑板</h3>
+          <p>自己做的課堂即時互動工具。老師開一個房間，學生用手機掃 QR code 加入，就能一起做文字雲、投票、測驗與競標，結果即時顯示在黑板上。</p>
+          <div class="facts"><span>老師端 + 學生端</span><span>即時同步</span><span>免安裝</span></div>
+          <span class="go">打開互動黑板 ↗</span>
+        </div>
+      </a>
+
+      <a class="work" href="https://halcyone1234-ux.github.io/three-crosses-comic/" target="_blank" rel="noopener">
+        <figure class="fig-comic"><img src="assets/comic-cover.jpg" alt="《三個交叉的傳說》漫畫封面，麋鹿與浩浩老師走在校園裡" width="600" height="800" loading="lazy"></figure>
+        <div class="body">
+          <span class="tag">教學漫畫</span>
+          <h3>三個交叉的傳說</h3>
+          <p>黃金交叉、交叉補貼、共同持股。三個看似無關的「交叉」，帶學生走進量化研究的三個入口：現象、理論與資料。</p>
+          <div class="facts"><span>17 頁</span><span>序章 + 3 章</span><span>已部署在 GitHub Pages</span></div>
+          <span class="go">打開漫畫 ↗</span>
+        </div>
+      </a>
+
+      <a class="work" href="https://halcyone1234-ux.github.io/giverny-last-palette/" target="_blank" rel="noopener">
+        <figure class="fig-169"><img src="assets/palette-cover.jpg" alt="《吉維尼的最後調色盤》開場畫面，溫室裡飄散的金色花粉" width="900" height="506" loading="lazy"></figure>
+        <div class="body">
+          <span class="tag">互動推理遊戲</span>
+          <h3>吉維尼的最後調色盤</h3>
+          <p>玩家扮演偵探，審訊嫌疑人、檢驗物證、重建因果邏輯鏈。破案需要用到化學、聲學、植物學等跨領域知識。</p>
+          <div class="facts"><span>三幕：審訊、物證檢驗、推理矩陣</span><span>已部署在 GitHub Pages</span></div>
+          <span class="go">開始辦案 ↗</span>
+        </div>
+      </a>
+
+      <a class="work only-win" href="handouts/yt_video_teaching_guide.html#case-study">
+        <div class="mini" aria-hidden="true">
+          <span><span class="a">/watch</span> https://www.youtube.com/watch?v=…</span>
+          <span class="c">下載影片 → 截圖 → 讀取畫面</span>
+          <span>&nbsp;</span>
+          <span>影片框架：AI 產業四層結構</span>
+          <span>重點 1　Anthropic 爆發式成長</span>
+          <span>重點 2　OpenAI 的股權與融資</span>
+          <span class="c">… 共 7 項重點</span>
+        </div>
+        <div class="body">
+          <span class="tag">影片 → 教材</span>
+          <h3>從 YouTube 影片擷取重點</h3>
+          <p>實測一支 19 分 28 秒、沒有官方字幕的影片。單靠畫面上的圖表與字卡，整理出影片框架與 7 項重點，並附上局限說明。</p>
+          <div class="facts"><span>無字幕影片</span><span>純靠畫面重建</span></div>
+          <span class="go">看實測結果 →</span>
+        </div>
+      </a>
+      <a class="work only-mac" href="handouts/yt_video_teaching_guide_mac.html#case-study">
+        <div class="mini" aria-hidden="true">
+          <span><span class="a">/watch</span> https://www.youtube.com/watch?v=…</span>
+          <span class="c">下載影片 → 截圖 → 讀取畫面</span>
+          <span>&nbsp;</span>
+          <span>影片框架：AI 產業四層結構</span>
+          <span>重點 1　Anthropic 爆發式成長</span>
+          <span>重點 2　OpenAI 的股權與融資</span>
+          <span class="c">… 共 7 項重點</span>
+        </div>
+        <div class="body">
+          <span class="tag">影片 → 教材</span>
+          <h3>從 YouTube 影片擷取重點</h3>
+          <p>實測一支 19 分 28 秒、沒有官方字幕的影片。單靠畫面上的圖表與字卡，整理出影片框架與 7 項重點，並附上局限說明。</p>
+          <div class="facts"><span>無字幕影片</span><span>純靠畫面重建</span></div>
+          <span class="go">看實測結果 →</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <p>國立中興大學教師成長社群 · AI 融入教學分享｜王思永（生物產業管理研究所）</p>
+    <p>這個頁面本身也是用 Claude Code 製作的。</p>
+  </footer>
+</main>
+
+<script>
+(function(){
+  var root = document.documentElement;
+
+  /* ----- OS switch ----- */
+  function store(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+  function load(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+
+  function detect(){
+    var p = ((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent || '').toLowerCase();
+    return /mac|iphone|ipad/.test(p) ? 'mac' : 'win';
+  }
+  function setOS(os){
+    root.setAttribute('data-os', os);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-set-os]'), function(b){
+      b.setAttribute('aria-pressed', b.getAttribute('data-set-os') === os ? 'true' : 'false');
+    });
+  }
+  var saved = load('os');
+  setOS(saved === 'mac' || saved === 'win' ? saved : detect());
+  Array.prototype.forEach.call(document.querySelectorAll('[data-set-os]'), function(b){
+    b.addEventListener('click', function(){
+      var os = b.getAttribute('data-set-os');
+      setOS(os); store('os', os);
+    });
+  });
+
+  /* ----- theme ----- */
+  var t = load('theme');
+  if(t === 'dark' || t === 'light') root.setAttribute('data-theme', t);
+  document.getElementById('themeBtn').addEventListener('click', function(){
+    var cur = root.getAttribute('data-theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    var next = cur === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next); store('theme', next);
+  });
+
+  /* ----- copy ----- */
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e){}
+    document.body.removeChild(ta);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.copy'), function(btn){
+    btn.addEventListener('click', function(){
+      var text = btn.getAttribute('data-copy');
+      var done = function(){
+        var o = btn.textContent; btn.textContent = '已複製';
+        setTimeout(function(){ btn.textContent = o; }, 1400);
+      };
+      if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(text).then(done, function(){ fallbackCopy(text); done(); });
+      } else { fallbackCopy(text); done(); }
+    });
+  });
+})();
+</script>
+</body>
+</html>

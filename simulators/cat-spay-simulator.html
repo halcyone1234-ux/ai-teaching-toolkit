@@ -1,0 +1,1485 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>貓咪結紮模擬手術台</title>
+<meta name="description" content="母貓卵巢子宮切除術 (Feline OHE) 術前模擬遊戲：步驟、器械、風險，依據 Fossum Small Animal Surgery 4e 與結紮相關文獻。">
+<style>
+:root{
+  --bg:#eef3f2; --panel:#ffffff; --panel2:#f6f9f8; --ink:#1b2a28; --muted:#5b6b69; --line:#d6e0de;
+  --accent:#1f7a68; --accent2:#155c4e; --accent-soft:#e0f0eb;
+  --good:#23855a; --good-soft:#e3f4ea; --bad:#c0392b; --bad-soft:#fbe8e5; --warn:#a86a12; --warn-soft:#fcf1dc;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(20,40,36,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1615; --panel:#172120; --panel2:#1d2927; --ink:#e3ecea; --muted:#9db0ac; --line:#2b3a37;
+    --accent:#3fae95; --accent2:#2f8d78; --accent-soft:#1c3530;
+    --good:#4cc38a; --good-soft:#173328; --bad:#ef6f5e; --bad-soft:#3a1d1a; --warn:#e2a64a; --warn-soft:#352813;
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1615; --panel:#172120; --panel2:#1d2927; --ink:#e3ecea; --muted:#9db0ac; --line:#2b3a37;
+  --accent:#3fae95; --accent2:#2f8d78; --accent-soft:#1c3530;
+  --good:#4cc38a; --good-soft:#173328; --bad:#ef6f5e; --bad-soft:#3a1d1a; --warn:#e2a64a; --warn-soft:#352813;
+  --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,-apple-system,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{font:inherit;color:inherit}
+h1,h2,h3{line-height:1.3}
+.wrap{max-width:1240px;margin:0 auto;padding:16px}
+/* header */
+.hud{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line)}
+.hud .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.brand{font-weight:700;display:flex;align-items:center;gap:8px;font-size:16px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;align-items:center}
+.chip{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip.modechip{background:var(--accent-soft);border-color:transparent;color:var(--accent);font-weight:700}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 16px;cursor:pointer;font-weight:600;transition:background .15s,border-color .15s}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover:not(:disabled){background:var(--accent2)}
+.btn.small{padding:4px 12px;font-size:13px}
+.btn.big{padding:12px 28px;font-size:17px}
+.btn:disabled{opacity:.5;cursor:default}
+/* game layout */
+.game{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.stagehead{padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.stagehead h2{margin:0;font-size:21px}
+.stagehead .en{color:var(--muted);font-size:13px}
+.stagehead .tc{color:var(--muted);font-size:13px}
+.scene{margin:0 14px;border-radius:12px;overflow:hidden;background:#24302e;display:flex;justify-content:center}
+.scene>svg{display:block;width:100%;height:auto;max-height:60vh}
+.scene svg.pick{cursor:crosshair}
+.taskbox{padding:6px 18px 18px}
+.q{font-size:16.5px;margin:12px 0 12px}
+.sub{color:var(--muted);font-size:14px;margin:-6px 0 12px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opts.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;border:1.5px solid var(--line);background:var(--panel2);border-radius:10px;padding:10px 12px;cursor:pointer;width:100%;font-size:15px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt input{margin-top:5px;accent-color:var(--accent);width:17px;height:17px;flex:none}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrongpick{border-color:var(--bad);background:var(--bad-soft)}
+.opt.missed{border-color:var(--warn);background:var(--warn-soft)}
+.opts.grid .opt{flex-direction:column;align-items:center;text-align:center}
+.opt svg{width:100%;max-width:150px;height:auto;border-radius:8px}
+.fb{border-radius:10px;padding:10px 14px;margin-top:12px;font-size:14.5px}
+.fb.good{background:var(--good-soft);border-left:4px solid var(--good)}
+.fb.bad{background:var(--bad-soft);border-left:4px solid var(--bad)}
+.fb.small{font-size:13.5px;padding:6px 12px}
+.fb ul{margin:6px 0 0;padding-left:20px}
+.fb li{margin:4px 0}
+.fb li span{color:var(--muted)}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+.placed{margin:0 0 10px;padding-left:26px}
+.placed li{background:var(--accent-soft);border-radius:8px;padding:6px 10px;margin:4px 0;font-size:14.5px}
+.pool{display:flex;flex-direction:column;gap:8px}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.learn{margin:12px 14px 0;background:var(--accent-soft);border-radius:10px;padding:0 14px;font-size:14.5px}
+.learn summary{cursor:pointer;font-weight:700;padding:8px 0;color:var(--accent)}
+.learn ul{margin:0 0 6px;padding-left:20px}
+.learn .refs{padding-bottom:10px}
+.ref{display:inline-block;font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1px 8px;color:var(--muted)}
+/* monitor */
+.monitor{background:#0b1312;color:#cfe9e2;border-radius:14px;padding:12px;font-variant-numeric:tabular-nums;border:1px solid #1f2d2b}
+.mon-top{display:flex;justify-content:space-between;font-size:12px;color:#8fb3aa;margin-bottom:6px;gap:8px}
+#ecg{width:100%;height:64px;display:block;background:#0b1312}
+.vit{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.v{background:#111d1b;border-radius:8px;padding:5px 10px}
+.v small{display:block;font-size:11px;color:#8fb3aa}
+.v b{font-size:26px;line-height:1.15}
+.v i{font-style:normal;font-size:11px;color:#8fb3aa;margin-left:3px}
+.v.hr b{color:#39e58c}.v.sp b{color:#4fd2f0}.v.rr b{color:#f3d34a}.v.tp b{color:#f2f2f2}
+.v.alarm{animation:blink 1s infinite}
+@keyframes blink{50%{background:#7a1d18}}
+.depth{font-weight:700}.depth.bad{color:#ff7a6b}
+.monitor.flash{box-shadow:0 0 0 3px #ff5a4a}
+.side .card{margin-top:14px}
+.steps{padding:12px 12px}
+.steps h4,.pmini h4{margin:0 0 6px;font-size:13px;color:var(--muted);font-weight:600}
+.steps ol{margin:0;padding:0;list-style:none;font-size:13.5px}
+.steps li{padding:3px 6px;border-radius:6px;display:flex;gap:8px;color:var(--muted)}
+.steps li.cur{background:var(--accent-soft);color:var(--ink);font-weight:700}
+.steps li.done{color:var(--ink)}
+.steps li .n{width:22px;text-align:right;flex:none}
+.pmini{padding:12px 14px;font-size:13.5px}
+.pmini .row{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding:2px 0}
+.pmini .row:last-child{border:none}
+/* match */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cards,.slots{display:flex;flex-direction:column;gap:8px}
+.icard{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);background:var(--panel2);border-radius:10px;padding:6px 10px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;font-size:14.5px}
+.icard svg{width:86px;height:25px;flex:none}
+.icard small{display:block;color:var(--muted);font-size:11.5px}
+.icard.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.icard.used{opacity:.35;pointer-events:none}
+.ghost{position:fixed;z-index:100;pointer-events:none;opacity:.92;box-shadow:0 10px 26px rgba(0,0,0,.25);background:var(--panel)}
+.slot{border:1.5px dashed var(--line);border-radius:10px;padding:8px 10px;min-height:46px;font-size:14px;display:flex;flex-direction:column;justify-content:center;cursor:pointer}
+.slot.hover{border-color:var(--accent);background:var(--accent-soft)}
+.slot.ok{border-style:solid;border-color:var(--good);background:var(--good-soft);cursor:default}
+.slot .put{font-weight:700;color:var(--good);font-size:13px}
+/* meter */
+.meter{position:relative;height:34px;border-radius:17px;background:linear-gradient(90deg,#f3d2a8,#e6e6e6 50%,#f0a59e);margin:26px 0 8px;border:1px solid var(--line)}
+.zone{position:absolute;top:0;bottom:0;background:rgba(46,160,90,.55);border-left:2px solid #1e8a4c;border-right:2px solid #1e8a4c}
+.needle{position:absolute;top:-7px;bottom:-7px;width:5px;margin-left:-2.5px;background:#1b2a28;border-radius:3px;box-shadow:0 0 0 2px #fff}
+.ml,.mr{position:absolute;top:-22px;font-size:12px;color:var(--muted)}.ml{left:6px}.mr{right:6px}
+/* dose */
+.drow{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:8px;background:var(--panel2)}
+.drow small{display:block;color:var(--muted)}
+.drow input{width:92px;font:inherit;padding:6px 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);text-align:right}
+.drow.ok{border-color:var(--good)}.drow.no{border-color:var(--bad)}
+.drow .ans{font-size:13px;color:var(--muted)}
+table.mini{border-collapse:collapse;font-size:13.5px;margin-top:6px;width:100%}
+table.mini td,table.mini th{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(8,14,13,.62);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal .box{background:var(--panel);border-radius:16px;max-width:580px;width:100%;padding:20px 22px;border-top:6px solid var(--bad);max-height:92vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.modal h3{margin:0 0 6px;color:var(--bad);font-size:20px}
+.modal .tag{font-size:12px;font-weight:700;color:var(--bad);letter-spacing:.08em}
+/* toast */
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 20px;border-radius:999px;z-index:60;font-weight:600;animation:tin .25s;max-width:calc(100% - 32px);text-align:center}
+@keyframes tin{from{opacity:0;transform:translate(-50%,10px)}}
+/* home */
+.hero{display:grid;grid-template-columns:1.1fr 1fr;gap:20px;padding:24px;align-items:center}
+.hero h1{margin:4px 0 12px;font-size:32px}
+.hero h1 span{font-size:20px;color:var(--muted);font-weight:500}
+.eyebrow{color:var(--accent);font-weight:700;margin:0;font-size:14px;letter-spacing:.04em}
+.hero-art svg{width:100%;height:auto;border-radius:12px;display:block}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.mode{padding:20px}
+.mode h3{margin:0 0 6px}
+.mode p{margin:0 0 14px;color:var(--muted)}
+.best{font-size:13px;color:var(--muted);margin-top:10px}
+.more{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.flow{margin-top:16px;padding:18px 20px}
+.flow ol{columns:3;column-gap:24px;margin:8px 0 0;padding-left:22px;font-size:14px}
+.disclaimer{background:var(--warn-soft);border-left:4px solid var(--warn);border-radius:8px;padding:10px 14px;font-size:14px;margin-top:16px}
+.foot{color:var(--muted);font-size:13px;text-align:center;margin:20px 0}
+/* case card */
+.casecard{display:flex;gap:18px;align-items:center;padding:18px 22px;background:#f7f2e7;width:100%;color:#2a2a2a}
+.casecard .cface{width:38%;max-width:220px;flex:none}
+.casecard .cface svg{width:100%;height:auto}
+.casecard h3{margin:2px 0 8px;font-size:24px}
+.casecard dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:0;font-size:14.5px}
+.casecard dt{color:#7a6d55;font-weight:700}
+.casecard dd{margin:0}
+.ctag{display:inline-block;background:#2f665d;color:#fff;border-radius:6px;padding:1px 8px;font-size:12px}
+/* pages */
+.page{padding:22px 26px;margin-top:16px}
+.page h2{margin-top:0}
+.page h3{margin:22px 0 6px;color:var(--accent)}
+.page table{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}
+.page th,.page td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.page th{background:var(--panel2)}
+.knots{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.knot{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--panel2)}
+.knot h4{margin:0 0 6px}
+.knot svg{width:100%;height:auto;background:#fff;border-radius:8px;margin:6px 0}
+.knot.bad{border-color:var(--bad)}
+.knot.good{border-color:var(--good)}
+.knot p,.knot ol{font-size:14px;margin:4px 0}
+.tablewrap{overflow-x:auto}
+/* results */
+.res-top{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;padding:22px}
+.ring{width:150px;height:150px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--panel2);border-radius:10px;padding:10px 12px}
+.stat small{display:block;color:var(--muted);font-size:12.5px}
+.stat b{font-size:20px}
+.errs{padding:18px 22px;margin-top:16px}
+.errgroup h4{margin:16px 0 6px;font-size:15px}
+.err{border-left:4px solid var(--bad);background:var(--bad-soft);border-radius:8px;padding:8px 12px;margin:6px 0;font-size:14px}
+.err .why{color:var(--ink);opacity:.85;margin-top:2px}
+.err .r{margin-top:4px}
+.spot{animation:pulse 1.1s infinite}
+@keyframes pulse{50%{opacity:.35}}
+@media (max-width:880px){
+  .game{grid-template-columns:minmax(0,1fr)}
+  .side{order:-1;min-width:0}
+  .side .card{display:none}
+  .vit{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .match{grid-template-columns:minmax(0,1fr)}
+  .chips{margin-left:0}
+  .v{padding:4px 6px}
+  .v b{font-size:19px}
+  #ecg{height:40px}
+  .match{grid-template-columns:1fr}
+  .hero{grid-template-columns:1fr}
+  .modes{grid-template-columns:1fr}
+  .flow ol{columns:1}
+  .res-top{grid-template-columns:1fr;justify-items:center}
+  .casecard{flex-direction:column;gap:8px;padding:12px}
+  .casecard .cface{width:28%}
+  .scene{margin:0 10px;max-height:none}
+}
+@media (max-width:520px){
+  .wrap{padding:12px}
+  .hero{padding:16px}.hero h1{font-size:25px}
+  .stagehead h2{font-size:18px}
+  .casecard dl{font-size:13px}.casecard h3{font-size:19px}
+  .scene text.lb{font-size:12.5px}
+}
+@media print{
+  .hud,.actions,.noprint{display:none!important}
+  body{background:#fff;color:#000}
+  .card{box-shadow:none;border-color:#bbb}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+/* ============================================================
+   工具函式
+   ============================================================ */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const val=v=>typeof v==='function'?v():v;
+const strip=h=>String(h).replace(/<[^>]+>/g,'');
+const f=n=>(+n).toFixed(1);
+const store={
+  get(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+};
+
+/* ============================================================
+   遊戲狀態
+   ============================================================ */
+const S={mode:'learn',patient:null,stage:0,task:0,errors:[],score:100,start:0,simMin:0,opMin:0,flags:{},prog:{},
+  vs:{bleed:0,light:0,deep:0,stress:0,tempFix:0},cur:null,timer:null};
+const P=()=>S.patient;
+const LEARN=()=>S.mode==='learn';
+const STAGE=()=>STAGES[S.stage];
+let box=null;
+
+const COATS=[
+  {n:'橘虎斑',fur:'#e2a15c',belly:'#f7dfc2',stripe:'#c47a35'},
+  {n:'灰虎斑',fur:'#9b9c9e',belly:'#e7e4df',stripe:'#6f7072'},
+  {n:'三花',fur:'#e0a464',belly:'#fbf4ea',stripe:'#3d3a38'},
+  {n:'黑貓',fur:'#3a3633',belly:'#4d4845',stripe:'#2a2826'},
+  {n:'白貓',fur:'#efede8',belly:'#fbfaf7',stripe:'#d8d4cc'}
+];
+function makePatient(){
+  const kitten=Math.random()<0.3;
+  const ageW=kitten?Math.round(rnd(9,15)):Math.round(rnd(24,160));
+  const weight=kitten?+rnd(1.0,1.8).toFixed(1):+rnd(2.6,4.6).toFixed(1);
+  const estrus=!kitten&&Math.random()<0.35;
+  const ageText=kitten?`${ageW} 週齡`:(ageW<52?`${Math.round(ageW/4.33)} 個月`:`${(ageW/52).toFixed(1).replace(/\.0$/,'')} 歲`);
+  return {name:pick(['咪咪','橘子','小花','黑糖','豆花','麻糬','雪球','布丁','芝麻','奶茶']),kitten,ageW,ageText,weight,estrus,
+    coat:pick(COATS),id:'NCHU-'+Math.floor(rnd(1000,9999))};
+}
+
+/* ============================================================
+   生命徵象
+   ============================================================ */
+function tempNow(){
+  const p=P(); const r=S.flags.warm?0.03:(p.kitten?0.1:0.07);
+  return 38.5-r*S.simMin+S.vs.tempFix;
+}
+function vitalsCalc(){
+  const p=P(),v=S.vs,n=a=>(Math.random()-.5)*2*a;
+  const anes=S.stage>=2;
+  let hr,rr;
+  if(!anes){hr=(p.kitten?210:185)+n(4);rr=30+n(2);}
+  else{
+    hr=(p.kitten?172:148)+v.bleed*48+v.light*50-v.deep*55+v.stress*20+n(3);
+    rr=16+v.light*10-v.deep*9+v.bleed*7+n(1.4);
+  }
+  const sp=Math.min(100,98-v.deep*7-v.bleed*3+n(.7));
+  return {hr:Math.round(hr),rr:Math.max(4,Math.round(rr)),sp:Math.round(sp),t:tempNow()+n(.03),
+    depth:!anes?'未麻醉':v.deep?'過深':v.light?'過淺':'適當'};
+}
+function paintVitals(){
+  const c=S.cur=vitalsCalc(); if(!$('#vHR'))return;
+  $('#vHR').textContent=c.hr; $('#vRR').textContent=c.rr; $('#vSP').textContent=c.sp; $('#vT').textContent=c.t.toFixed(1);
+  $('#vHRb').classList.toggle('alarm',S.stage>=2&&(c.hr<100||c.hr>210));
+  $('#vSPb').classList.toggle('alarm',c.sp<94);
+  $('#vRRb').classList.toggle('alarm',S.stage>=2&&(c.rr<8||c.rr>30));
+  $('#vTb').classList.toggle('alarm',c.t<36.5);
+  const d=$('#mDepth'); d.textContent='麻醉深度：'+c.depth; d.className='depth'+(c.depth==='過深'||c.depth==='過淺'?' bad':'');
+}
+function startTicker(){
+  stopTicker();
+  S.timer=setInterval(()=>{S.vs.stress*=0.85;paintVitals();updateHUD();},1000);
+  paintVitals();
+  const cv=$('#ecg'); if(cv){cv.width=cv.clientWidth||260;cv.height=cv.clientHeight||64;}
+  ecg.x=0;ecg.last=null;ecg.t0=0;
+  if(!ecg.raf) ecg.raf=requestAnimationFrame(ecgLoop);
+}
+function stopTicker(){if(S.timer)clearInterval(S.timer);S.timer=null;}
+const ecg={x:0,last:null,ph:0,t0:0,raf:null};
+function ecgLoop(ts){
+  const cv=$('#ecg'); if(!cv){ecg.raf=null;return;}
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  const dt=ecg.t0?Math.min(.05,(ts-ecg.t0)/1000):0; ecg.t0=ts;
+  ecg.ph+=dt*((S.cur&&S.cur.hr)||150)/60;
+  const ph=ecg.ph%1,g=(c,w,a)=>a*Math.exp(-(((ph-c)/w)**2));
+  const y=g(.12,.03,.12)-g(.215,.008,.12)+g(.235,.011,1)-g(.26,.011,.28)+g(.45,.05,.24);
+  const px=ecg.x,py=H*.66-y*H*.55;
+  ctx.fillStyle='#0b1312';ctx.fillRect(px+1,0,14,H);
+  if(ecg.last&&px>ecg.last[0]){ctx.strokeStyle='#39e58c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ecg.last[0],ecg.last[1]);ctx.lineTo(px,py);ctx.stroke();}
+  ecg.last=[px,py];
+  ecg.x+=dt*110; if(ecg.x>W){ecg.x=0;ecg.last=null;}
+  ecg.raf=requestAnimationFrame(ecgLoop);
+}
+
+/* ============================================================
+   SVG 繪圖：器械
+   ============================================================ */
+const STEEL='#7b8896';
+function ringBase(boxX){
+  return `<circle cx="12" cy="11" r="7" fill="none" stroke="${STEEL}" stroke-width="3"/><circle cx="12" cy="29" r="7" fill="none" stroke="${STEEL}" stroke-width="3"/>
+  <path d="M18 13 L${boxX} 19 M18 27 L${boxX} 21" stroke="${STEEL}" stroke-width="3" fill="none"/><circle cx="${boxX}" cy="20" r="3.6" fill="${STEEL}"/>`;
+}
+function instr(id){
+  const c=STEEL;
+  switch(id){
+    case 'scalpel': return `<rect x="6" y="17" width="74" height="6" rx="2" fill="#9aa5b1"/><path d="M14 18 H70" stroke="#c3ccd3" stroke-width="1"/><path d="M80 17 L114 14 Q128 19 114 26 L80 23 Z" fill="#d7dee3" stroke="${c}"/>`;
+    case 'metz': return ringBase(62)+`<path d="M62 18 Q104 16 134 11 M62 22 Q104 20 134 12" stroke="${c}" stroke-width="2.6" fill="none"/>`;
+    case 'mayo': return ringBase(72)+`<path d="M72 17 L124 16.5 L126 20 L72 23 Z" fill="${c}"/><path d="M74 20 L124 20" stroke="#cdd5db" stroke-width="1"/>`;
+    case 'carmalt': return ringBase(70)+`<path d="M70 17.5 L134 18.5 L134 21.5 L70 22.5 Z" fill="${c}"/><path d="M76 20 H132" stroke="#cdd5db" stroke-width="1"/>`;
+    case 'mosq': return `<g transform="translate(6 3) scale(.85)">`+ringBase(70)+`<path d="M70 19 Q108 18 124 11 M70 21 Q108 20 124 12" stroke="${c}" stroke-width="2.6" fill="none"/></g>`;
+    case 'nh': return ringBase(96)+`<path d="M96 16.5 L126 18 L126 22 L96 23.5 Z" fill="${c}"/><path d="M100 18 l4 4 m2-4 l4 4 m2-4 l4 4 m2-4 l4 4" stroke="#cdd5db" stroke-width="1"/>`;
+    case 'adson': return `<path d="M8 20 L128 14 M8 20 L128 26" stroke="${c}" stroke-width="4" stroke-linecap="round"/><path d="M40 17 l0 6 m6 -6 l0 6 m6 -6 l0 6" stroke="#cdd5db" stroke-width="1.2"/>`;
+    case 'hook': return `<rect x="6" y="14" width="46" height="12" rx="4" fill="${c}"/><path d="M52 20 L124 20 Q134 20 133 12 Q131 7 125 9" stroke="${c}" stroke-width="3.6" fill="none" stroke-linecap="round"/>`;
+    case 'towel': return ringBase(84)+`<path d="M84 18 Q108 -2 124 20 M84 22 Q108 42 124 20" stroke="${c}" stroke-width="3" fill="none"/>`;
+    case 'allis': return ringBase(74)+`<path d="M74 18 L120 17 L128 13 M74 22 L120 23 L128 27" stroke="${c}" stroke-width="3" fill="none"/><path d="M128 13 L128 27" stroke="${c}" stroke-width="2" stroke-dasharray="1.5 1.5"/>`;
+  }
+  return '';
+}
+const instrSVG=id=>`<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg">${instr(id)}</svg>`;
+
+/* 止血鉗（場景用）：jaw 跨在 (x,y)，u 為往把手的方向 */
+function clampG(x,y,ux,uy,o={}){
+  const L=o.len||62,J=o.jaw||15,col=o.c||'#55616d';
+  const tx=x-ux*J,ty=y-uy*J,bx=x+ux*J*.9,by=y+uy*J*.9,ex=bx+ux*L,ey=by+uy*L,nx=-uy,ny=ux;
+  return `<g><line x1="${f(tx)}" y1="${f(ty)}" x2="${f(bx)}" y2="${f(by)}" stroke="${col}" stroke-width="5.5" stroke-linecap="round"/>
+  <line x1="${f(bx)}" y1="${f(by)}" x2="${f(ex+nx*7)}" y2="${f(ey+ny*7)}" stroke="${col}" stroke-width="3"/>
+  <line x1="${f(bx)}" y1="${f(by)}" x2="${f(ex-nx*7)}" y2="${f(ey-ny*7)}" stroke="${col}" stroke-width="3"/>
+  <circle cx="${f(bx)}" cy="${f(by)}" r="3.5" fill="${col}"/>
+  <circle cx="${f(ex+nx*9+ux*6)}" cy="${f(ey+ny*9+uy*6)}" r="6.5" fill="none" stroke="${col}" stroke-width="3"/>
+  <circle cx="${f(ex-nx*9+ux*6)}" cy="${f(ey-ny*9+uy*6)}" r="6.5" fill="none" stroke="${col}" stroke-width="3"/></g>`;
+}
+const DR='#3d7f74',DR2='#2c6158';
+const DEFS=`<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ffd84a"/></marker></defs>`;
+function svgWrap(inner){return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" font-family="Noto Sans TC, Microsoft JhengHei, sans-serif">${DEFS}${inner}</svg>`;}
+function lbl(x,y,t,o={}){
+  if(!LEARN()&&!o.always)return '';
+  return `<text class="lb" x="${x}" y="${y}" text-anchor="${o.a||'middle'}" font-size="${o.fs||9.5}" font-weight="600" fill="${o.c||'#fff'}" stroke="${o.s||'rgba(0,0,0,.6)'}" stroke-width="2.6" paint-order="stroke">${t}</text>`;
+}
+function arrowG(x1,y1,x2,y2,t){
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#ffd84a" stroke-width="3.5" marker-end="url(#ah)"/>`+(t?`<text x="${x2+6}" y="${y2+4}" font-size="12" font-weight="700" fill="#ffd84a" stroke="rgba(0,0,0,.6)" stroke-width="3" paint-order="stroke">${t}</text>`:'');
+}
+function ligG(x,y,ux,uy,w,col){ // 結紮線：橫跨組織的一條帶子
+  const nx=-uy,ny=ux;
+  return `<line x1="${f(x-ux*w)}" y1="${f(y-uy*w)}" x2="${f(x+ux*w)}" y2="${f(y+uy*w)}" stroke="${col||'#7d4cc2'}" stroke-width="3.2" stroke-linecap="round"/><circle cx="${f(x+ux*w)}" cy="${f(y+uy*w)}" r="2.6" fill="${col||'#7d4cc2'}"/>`;
+}
+
+/* ============================================================
+   SVG 繪圖：場景
+   ============================================================ */
+function catFace(c,closed){
+  return `<svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+  <path d="M40 70 L34 10 L82 44 Z" fill="${c.fur}"/><path d="M160 70 L166 10 L118 44 Z" fill="${c.fur}"/>
+  <path d="M46 58 L42 24 L72 46 Z" fill="#f2b9b0"/><path d="M154 58 L158 24 L128 46 Z" fill="#f2b9b0"/>
+  <ellipse cx="100" cy="100" rx="72" ry="64" fill="${c.fur}"/>
+  <path d="M100 38 v18 M86 40 v14 M114 40 v14" stroke="${c.stripe}" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="100" cy="128" rx="40" ry="30" fill="${c.belly}"/>
+  ${closed?`<path d="M62 96 q12 8 24 0 M114 96 q12 8 24 0" stroke="#3b2f2a" stroke-width="3.5" fill="none" stroke-linecap="round"/>`:
+  `<ellipse cx="74" cy="94" rx="11" ry="13" fill="#9ccf6a"/><ellipse cx="126" cy="94" rx="11" ry="13" fill="#9ccf6a"/><ellipse cx="74" cy="95" rx="3.5" ry="10" fill="#222"/><ellipse cx="126" cy="95" rx="3.5" ry="10" fill="#222"/>`}
+  <path d="M93 116 L107 116 L100 124 Z" fill="#e58f95"/><path d="M100 124 q-8 10 -16 4 M100 124 q8 10 16 4" stroke="#3b2f2a" stroke-width="2.2" fill="none"/>
+  <path d="M60 120 L20 112 M60 128 L22 132 M140 120 L180 112 M140 128 L178 132" stroke="#888" stroke-width="1.6"/></svg>`;
+}
+function scenePreop(){
+  const p=P();
+  const hist=p.estrus?'最近 3 天常叫春、在地上打滾、翹屁股，食慾稍降':p.kitten?'收容所送養幼貓，已驅蟲、完成第一劑疫苗':'疫苗已完成，無特殊病史，從未生產';
+  return `<div class="casecard"><div class="cface">${catFace(p.coat)}</div><div><span class="ctag">病歷 ${p.id}</span><h3>${p.name}</h3>
+  <dl><dt>品種</dt><dd>米克斯 DSH・${p.coat.n}</dd><dt>性別</dt><dd>母（未絕育）intact female</dd><dt>年齡</dt><dd>${p.ageText}</dd>
+  <dt>體重</dt><dd>${p.weight} kg</dd><dt>主訴</dt><dd>飼主希望進行絕育手術</dd><dt>病史</dt><dd>${hist}</dd></dl></div></div>`;
+}
+function sceneAnes(){
+  const p=P();
+  const vial=(x,cap,name,conc)=>`<g><rect x="${x}" y="70" width="58" height="96" rx="10" fill="#e8f1f4" stroke="#9fb2ba" stroke-width="2"/>
+  <rect x="${x+12}" y="56" width="34" height="18" rx="4" fill="${cap}"/><rect x="${x+6}" y="100" width="46" height="44" fill="#fff" stroke="#c8d3d8"/>
+  <text x="${x+29}" y="118" font-size="9.5" text-anchor="middle" font-weight="700" fill="#24323a">${name}</text>
+  <text x="${x+29}" y="134" font-size="8.5" text-anchor="middle" fill="#4b5c66">${conc}</text></g>`;
+  return svgWrap(`<rect width="400" height="300" fill="#dfe7ea"/><rect y="186" width="400" height="114" fill="#c7d1d6"/>
+  <rect x="24" y="196" width="128" height="66" rx="10" fill="#f4f6f7" stroke="#97a4aa" stroke-width="2"/>
+  <rect x="38" y="208" width="100" height="30" rx="4" fill="#1d2b2a"/><text x="88" y="230" font-size="20" text-anchor="middle" fill="#39e58c" font-weight="700">${p.weight.toFixed(1)} kg</text>
+  <text x="88" y="254" font-size="10" text-anchor="middle" fill="#56656b">${p.name}・體重</text>
+  ${vial(178,'#3d7fd1','Dexmed.','0.5 mg/ml')}${vial(248,'#e0a43a','Butorphanol','10 mg/ml')}${vial(318,'#d9534f','Ketamine','100 mg/ml')}
+  <g transform="translate(180 222)"><rect x="0" y="0" width="150" height="16" rx="3" fill="#fff" stroke="#8a9aa2" stroke-width="2"/>
+  <rect x="2" y="2" width="56" height="12" fill="#cfe6f5"/><path d="M150 4 h22 v8 h-22 M172 8 h22" stroke="#8a9aa2" stroke-width="2.5" fill="none"/>
+  <path d="M-30 8 H0" stroke="#aab6bb" stroke-width="1.4"/>${[1,2,3,4,5,6,7,8,9].map(i=>`<line x1="${i*15}" y1="0" x2="${i*15}" y2="5" stroke="#8a9aa2"/>`).join('')}</g>
+  ${lbl(200,30,'多模式止痛 multimodal analgesia：鎮靜／誘導＋opioid＋NSAID＋局部麻醉',{always:true,fs:12,c:'#1f3b38',s:'rgba(255,255,255,.8)'})}`);
+}
+function sceneTray(){
+  const ids=['scalpel','metz','mayo','carmalt','mosq','nh','adson','hook','towel','allis'];
+  let g='';
+  ids.forEach((id,i)=>{const col=i%2,row=Math.floor(i/2);g+=`<g transform="translate(${46+col*168} ${46+row*44}) scale(1.08)">${instr(id)}</g>`;});
+  return svgWrap(`<rect width="400" height="300" fill="#b9c5ca"/><rect x="22" y="24" width="356" height="256" rx="14" fill="#cfd8dd" stroke="#8d9ba2" stroke-width="3"/>
+  <rect x="32" y="34" width="336" height="236" rx="8" fill="${DR}"/>${g}
+  <g transform="translate(316 238)"><rect width="40" height="26" rx="3" fill="#fff"/><path d="M4 8 h32 M4 14 h32 M4 20 h32" stroke="#4fa3d8" stroke-width="1.4"/></g>`);
+}
+function miniPose(t){
+  const c='#e2a15c',b='#f7dfc2';
+  const bg=`<rect width="120" height="90" rx="8" fill="#d3dbde"/>`;
+  if(t==='dorsal') return `<svg viewBox="0 0 120 90">${bg}<path d="M51 30 L36 20 M69 30 L84 20 M53 72 L44 86 M67 72 L76 86" stroke="${c}" stroke-width="6" stroke-linecap="round"/><ellipse cx="60" cy="50" rx="18" ry="27" fill="${c}"/><ellipse cx="60" cy="53" rx="11" ry="19" fill="${b}"/><circle cx="60" cy="16" r="11" fill="${c}"/><text x="60" y="57" font-size="9" text-anchor="middle" fill="#a0603a">腹</text></svg>`;
+  if(t==='lateral') return `<svg viewBox="0 0 120 90">${bg}<path d="M44 58 L38 80 M54 60 L54 82 M78 60 L76 82 M88 58 L92 80" stroke="${c}" stroke-width="6" stroke-linecap="round"/><ellipse cx="66" cy="48" rx="32" ry="16" fill="${c}"/><circle cx="28" cy="40" r="12" fill="${c}"/><path d="M98 46 Q112 40 110 26" stroke="${c}" stroke-width="5" fill="none" stroke-linecap="round"/></svg>`;
+  return `<svg viewBox="0 0 120 90">${bg}<ellipse cx="66" cy="54" rx="34" ry="18" fill="${c}"/><path d="M40 40 Q66 26 96 44" stroke="${b}" stroke-width="0" fill="none"/><circle cx="30" cy="44" r="13" fill="${c}"/><path d="M22 34 L20 24 L28 31 M38 34 L40 24 L32 31" fill="${c}"/><path d="M34 68 h16 M80 70 h16" stroke="${c}" stroke-width="6" stroke-linecap="round"/></svg>`;
+}
+function sceneExterior(o={}){
+  const c=P().coat;
+  const tie=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c9a46a" stroke-width="2.5" stroke-dasharray="5 3"/>`;
+  let s=`<rect width="400" height="300" fill="#aab6bb"/><rect x="24" y="8" width="352" height="284" rx="16" fill="#d3dbde" stroke="#97a4aa" stroke-width="2"/>`;
+  if(o.warm) s+=`<rect x="126" y="34" width="148" height="240" rx="14" fill="#86b7d9" opacity=".8"/><text x="330" y="160" font-size="11" text-anchor="middle" fill="#2e5e80">保溫墊</text><path d="M276 156 h26" stroke="#2e5e80"/>`;
+  s+=`<path d="M200 245 C202 272 236 280 262 286" fill="none" stroke="${c.fur}" stroke-width="11" stroke-linecap="round"/>`;
+  const hl=o.ties?'M182 230 L158 286':'M182 230 Q150 252 162 272',hr=o.ties?'M218 230 L242 286':'M218 230 Q250 252 238 272';
+  s+=`<path d="${hl}" stroke="${c.fur}" stroke-width="17" stroke-linecap="round" fill="none"/><path d="${hr}" stroke="${c.fur}" stroke-width="17" stroke-linecap="round" fill="none"/>`;
+  if(o.ties) s+=tie(158,286,96,292)+tie(242,286,304,292);
+  s+=`<path d="M168 96 Q138 108 146 136" stroke="${c.fur}" stroke-width="15" stroke-linecap="round" fill="none"/><path d="M232 96 Q262 108 254 136" stroke="${c.fur}" stroke-width="15" stroke-linecap="round" fill="none"/>`;
+  s+=`<ellipse cx="200" cy="160" rx="58" ry="92" fill="${c.fur}"/>`;
+  s+=o.clipped?`<ellipse cx="200" cy="170" rx="46" ry="80" fill="#f3c7b5"/>`:`<ellipse cx="200" cy="168" rx="38" ry="74" fill="${c.belly}"/>`;
+  if(o.clipped)[122,148,176,204].forEach(y=>{s+=`<circle cx="182" cy="${y}" r="2.3" fill="#d99a8c"/><circle cx="218" cy="${y}" r="2.3" fill="#d99a8c"/>`;});
+  if(o.scrub) s+=`<ellipse cx="200" cy="170" rx="46" ry="80" fill="#e46f98" opacity="${o.scrub===1?.38:.18}"/>`;
+  if(o.scrub===1) s+=`<path d="M200 170 m-8 0 a8 8 0 1 0 16 0 a16 16 0 1 0 -32 0 a26 26 0 1 0 52 0" fill="none" stroke="#fff" stroke-width="1.5" opacity=".7"/>`;
+  s+=`<path d="M176 34 L170 6 L192 24 Z M224 34 L230 6 L208 24 Z" fill="${c.fur}"/><circle cx="200" cy="48" r="29" fill="${c.fur}"/>`;
+  s+=o.anes?`<path d="M184 46 q6 4 12 0 M204 46 q6 4 12 0" stroke="#3b2f2a" stroke-width="2.2" fill="none"/>`:`<circle cx="189" cy="45" r="4" fill="#3b2f2a"/><circle cx="211" cy="45" r="4" fill="#3b2f2a"/>`;
+  if(o.lube) s+=`<circle cx="186" cy="44" r="2" fill="#fff"/><circle cx="208" cy="44" r="2" fill="#fff"/>`;
+  s+=`<path d="M196 58 h8 l-4 5 z" fill="#e58f95"/>`;
+  if(o.tube) s+=`<path d="M203 64 C214 72 240 50 250 14" stroke="#5aa0d8" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  const d=o.drapes||0;
+  if(d>=1) s+=`<rect x="0" y="0" width="400" height="96" fill="${DR}" stroke="${DR2}"/>`;
+  if(d>=2) s+=`<rect x="0" y="252" width="400" height="48" fill="${DR}" stroke="${DR2}"/>`;
+  if(d>=3) s+=`<rect x="0" y="0" width="156" height="300" fill="${DR}" stroke="${DR2}"/>`;
+  if(d>=4) s+=`<rect x="244" y="0" width="156" height="300" fill="${DR}" stroke="${DR2}"/>`+[[156,96],[244,96],[156,252],[244,252]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="6" fill="none" stroke="#c6ced4" stroke-width="3"/>`).join('');
+  if(o.fen) s+=`<path d="M0 0H400V300H0Z M166 108V242H234V108Z" fill="#2e6b61" fill-rule="evenodd"/><path d="M166 108V242H234V108Z" fill="none" stroke="#24564e" stroke-width="3"/>`;
+  if(d>=4) s+=lbl(200,24,'四角巾 + Backhaus 毛巾鉗',{fs:12})+(o.fen?lbl(200,290,'開窗巾 fenestrated drape',{fs:12}):'');
+  return svgWrap(s);
+}
+function sceneWindow(o={}){
+  let s=`<rect width="400" height="300" fill="${DR}"/><rect x="110" y="8" width="180" height="284" rx="6" fill="#f1c2ae"/><rect x="110" y="8" width="180" height="284" rx="6" fill="#e46f98" opacity=".13"/>`;
+  [60,120,180,240].forEach(y=>{s+=`<circle cx="138" cy="${y}" r="3" fill="#d39383"/><circle cx="262" cy="${y}" r="3" fill="#d39383"/>`;});
+  s+=`<path d="M194 95 L206 95 M200 89 L200 101 M196 91 L204 99 M204 91 L196 99" stroke="#b97a6a" stroke-width="1.8"/>`;
+  s+=`<path d="M146 262 Q200 244 254 262" fill="none" stroke="#c48e80" stroke-width="2.2" stroke-dasharray="4 3"/>`;
+  s+=`<rect x="110" y="8" width="180" height="284" rx="6" fill="none" stroke="${DR2}" stroke-width="6"/>`;
+  s+=lbl(200,80,'臍 umbilicus')+lbl(200,280,'恥骨前緣 pubic brim')+lbl(200,26,'劍突 xiphoid ↑');
+  if(o.guides){
+    s+=`<path d="M114 148 H286 M114 202 H286" stroke="#1f5a50" stroke-width="1.4" stroke-dasharray="5 4"/>`;
+    s+=lbl(284,124,'頭側 1/3',{a:'end',fs:9})+lbl(284,178,'中段 1/3',{a:'end',fs:9})+lbl(284,232,'尾側 1/3',{a:'end',fs:9});
+  }
+  if(o.inc&&!o.lin) s+=`<path d="M200 151 L200 199" stroke="#8e1f1f" stroke-width="3.2" stroke-linecap="round"/>`;
+  if(o.lin){
+    const k=o.open||0;
+    s+=`<ellipse cx="200" cy="175" rx="17" ry="30" fill="#f4dc9c" stroke="#a83a3a" stroke-width="2"/>`;
+    if(k<3) s+=`<rect x="196.5" y="150" width="7" height="50" rx="2" fill="#f7f7f2"/>`;
+    if(k===2) s+=`<ellipse cx="200" cy="172" rx="2.4" ry="4" fill="#4a1414"/>`;
+    if(k>=3) s+=`<ellipse cx="200" cy="175" rx="11" ry="26" fill="#4e1919"/><path d="M190 150 Q186 175 190 200 M210 150 Q214 175 210 200" stroke="#f7f7f2" stroke-width="3" fill="none"/><circle cx="198" cy="168" r="5" fill="#e9a99f"/><circle cx="203" cy="182" r="5" fill="#e9a99f"/>`;
+    if(k>=4) s+=`<path d="M184 160 h-30 M184 190 h-30" stroke="#8a96a3" stroke-width="5" stroke-linecap="round"/><path d="M216 160 h30 M216 190 h30" stroke="#8a96a3" stroke-width="5" stroke-linecap="round"/>`;
+    if(k===1||k===2) s+=`<path d="M204 170 L262 120 M204 174 L264 126" stroke="#7b8896" stroke-width="3.2" stroke-linecap="round"/>`;
+    s+=lbl(232,180,'白線 linea alba',{a:'start',fs:9});
+  }
+  return svgWrap(s);
+}
+function sceneInternal(o={}){
+  let s=`<defs><clipPath id="cav"><ellipse cx="200" cy="150" rx="150" ry="138"/></clipPath></defs>`;
+  s+=`<rect width="400" height="300" fill="${DR}"/><ellipse cx="200" cy="150" rx="156" ry="144" fill="#e6b199"/>`;
+  s+=`<g clip-path="url(#cav)"><rect width="400" height="300" fill="#5e1f1f"/>`;
+  s+=`<ellipse cx="112" cy="58" rx="22" ry="30" fill="#8a3a33" stroke="#5e2420" stroke-width="2"/><ellipse cx="288" cy="58" rx="22" ry="30" fill="#8a3a33" stroke="#5e2420" stroke-width="2"/>`;
+  if(!o.stumps){
+    s+=`<path d="M200 228 C160 222 118 176 126 106" fill="none" stroke="#e3a59c" stroke-width="9" stroke-linecap="round"/><path d="M200 228 C240 222 282 176 274 106" fill="none" stroke="#e3a59c" stroke-width="9" stroke-linecap="round"/>`;
+    s+=`<line x1="200" y1="228" x2="200" y2="268" stroke="#e3a59c" stroke-width="11"/>`;
+    s+=`<ellipse cx="126" cy="100" rx="11" ry="7" fill="#f3e3c4" stroke="#c9ad7a"/><ellipse cx="274" cy="100" rx="11" ry="7" fill="#f3e3c4" stroke="#c9ad7a"/>`;
+  }else{
+    s+=`<line x1="112" y1="88" x2="126" y2="104" stroke="#f0d69a" stroke-width="8" stroke-linecap="round"/>${ligG(122,99,.75,-.66,5)}`;
+    s+=`<line x1="288" y1="88" x2="274" y2="104" stroke="#f0d69a" stroke-width="8" stroke-linecap="round"/>${ligG(278,99,.75,.66,5)}`;
+    s+=`<line x1="200" y1="262" x2="200" y2="222" stroke="#e3a59c" stroke-width="11" stroke-linecap="round"/>${ligG(200,229,1,0,7)}`;
+  }
+  const full=o.bladderFull;
+  s+=`<ellipse cx="200" cy="${full?245:256}" rx="${full?46:30}" ry="${full?32:20}" fill="#f0d79c" stroke="#c8a860" stroke-width="2"/>`;
+  [[178,108],[212,100],[240,124],[190,138],[224,150],[168,168],[205,172],[238,180],[188,193]].forEach(p=>{
+    s+=`<ellipse cx="${p[0]}" cy="${p[1]}" rx="20" ry="15" fill="#efb0a6" stroke="#c9776c" stroke-width="2"/><path d="M${p[0]-11} ${p[1]} q11 -7 22 0" stroke="#d98d82" fill="none"/>`;
+  });
+  s+=`</g>`;
+  s+=lbl(112,30,'腎 kidney')+lbl(288,30,'腎 kidney')+lbl(205,140,'小腸 intestines')+lbl(200,(full?250:260),'膀胱 bladder');
+  if(!o.stumps) s+=lbl(96,118,'卵巢',{fs:9})+lbl(304,118,'卵巢',{fs:9})+lbl(128,184,'子宮角',{fs:9})+lbl(272,184,'子宮角',{fs:9});
+  if(o.stumps){
+    const ck=o.checked||{};
+    [['L',124,100],['R',276,100],['U',200,224]].forEach(([id,x,y])=>{
+      s+=ck[id]?`<circle cx="${x}" cy="${y}" r="16" fill="rgba(46,204,113,.25)" stroke="#2ecc71" stroke-width="3"/><text x="${x}" y="${y+5}" text-anchor="middle" font-size="15" fill="#2ecc71" font-weight="700">✓</text>`
+        :`<circle class="spot" cx="${x}" cy="${y}" r="16" fill="rgba(255,216,74,.15)" stroke="#ffd84a" stroke-width="3" stroke-dasharray="5 3"/>`;
+    });
+  }
+  return svgWrap(s);
+}
+function scenePedicle(o={}){
+  const sus=o.sus===undefined?4:o.sus,k=o.ped||0;
+  const A=[118,268],B=[212,122];
+  const pt=t=>[A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t];
+  const U=[-0.841,-0.541],N=[0.841,0.541];
+  let s=`<rect width="400" height="300" fill="${DR}"/><ellipse cx="200" cy="276" rx="168" ry="30" fill="#e6b199"/><ellipse cx="200" cy="279" rx="156" ry="22" fill="#4e1919"/>`;
+  s+=`<path d="M125 270 L208 134 L250 132 L300 270 Z" fill="#f6e6c6" opacity=".55"/>`;
+  if(k>=1){const w=pt(.5);s+=`<ellipse cx="${f(w[0]+19)}" cy="${f(w[1]+12)}" rx="10" ry="7" fill="${DR}" stroke="#d9c49a" stroke-width="1.5"/>`;}
+  if(sus<4){
+    const hl=sus===2||sus===3;
+    s+=`<path d="M200 112 Q120 140 62 266" fill="none" stroke="${hl?'#ffd84a':'#eee6d0'}" stroke-width="${hl?7:5}" stroke-linecap="round"/>`;
+  }else{
+    s+=`<path d="M200 112 Q178 120 160 134" stroke="#eee6d0" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M120 176 Q90 220 62 266" stroke="#eee6d0" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  }
+  const seg=(t1,t2)=>{const p1=pt(t1),p2=pt(t2);
+    return `<line x1="${f(p1[0])}" y1="${f(p1[1])}" x2="${f(p2[0])}" y2="${f(p2[1])}" stroke="#f0d69a" stroke-width="18" stroke-linecap="round"/>
+    <line x1="${f(p1[0]+N[0]*3.5)}" y1="${f(p1[1]+N[1]*3.5)}" x2="${f(p2[0]+N[0]*3.5)}" y2="${f(p2[1]+N[1]*3.5)}" stroke="#c0392b" stroke-width="2.4"/>
+    <line x1="${f(p1[0]-N[0]*3.5)}" y1="${f(p1[1]-N[1]*3.5)}" x2="${f(p2[0]-N[0]*3.5)}" y2="${f(p2[1]-N[1]*3.5)}" stroke="#3b5bab" stroke-width="2.4"/>`;};
+  if(k<6) s+=seg(0,1); else s+=seg(0,k>=8?.5:.6)+seg(.63,1);
+  if(k===3){const g=pt(.38);s+=`<line x1="${f(g[0]-N[0]*11)}" y1="${f(g[1]-N[1]*11)}" x2="${f(g[0]+N[0]*11)}" y2="${f(g[1]+N[1]*11)}" stroke="#9c7234" stroke-width="2.5"/>`;}
+  if(k>=4){const g=pt(.38);s+=ligG(g[0],g[1],N[0],N[1],11)+ligG(g[0]+U[0]*-3,g[1]+U[1]*-3,N[0],N[1],10);}
+  if(k>=5){const g=pt(.29);s+=ligG(g[0],g[1],N[0],N[1],11);}
+  s+=`<ellipse cx="212" cy="118" rx="25" ry="17" fill="#f2e1bf" stroke="#c9ad7a" stroke-width="2"/>`;
+  if(k>=7) s+=`<ellipse cx="212" cy="118" rx="15" ry="9" fill="#e7c48a" stroke="#b9925a"/><text x="212" y="96" text-anchor="middle" font-size="12" font-weight="700" fill="#7dffb0" stroke="rgba(0,0,0,.6)" stroke-width="3" paint-order="stroke">✓ 卵巢完整</text>`;
+  s+=`<path d="M234 124 L250 128" stroke="#e8c9b4" stroke-width="6"/><path d="M250 128 C318 134 336 206 306 270" fill="none" stroke="#e29c94" stroke-width="15" stroke-linecap="round"/>`;
+  if(sus>=3) s+=clampG(244,126,0.55,-0.835,{len:40,jaw:10,c:'#6b7785'});
+  if(sus>=1&&sus<4) s+=arrowG(334,208,362,250,'牽引');
+  if(k>=2){
+    if(k===2){const p=pt(.38);s+=clampG(p[0],p[1],U[0],U[1]);}
+    if(k<8){const p=pt(.52);s+=clampG(p[0],p[1],U[0],U[1]);}
+    const p=pt(.72);s+=clampG(p[0],p[1],U[0],U[1]);
+  }
+  if(k>=8){
+    const e=pt(.5);
+    s+=o.bleed?`<path d="M${f(e[0]+6)} ${f(e[1]+4)} q4 10 0 14 q-4 -4 0 -14 M${f(e[0]-6)} ${f(e[1]+12)} q4 10 0 14 q-4 -4 0 -14" fill="#c0392b"/>`
+      :`<text x="${f(e[0]-14)}" y="${f(e[1]-12)}" text-anchor="end" font-size="12" font-weight="700" fill="#7dffb0" stroke="rgba(0,0,0,.6)" stroke-width="3" paint-order="stroke">✓ 殘端無出血</text>`;
+  }
+  s+=`<text x="16" y="24" font-size="14" font-weight="700" fill="#fff">${o.side||'左'}側卵巢 ${o.side==='右'?'(R)':'(L)'}</text>`;
+  s+=lbl(170,104,'卵巢 ovary',{a:'end'})+lbl(346,160,'子宮角',{fs:9})+lbl(262,236,'闊韌帶 broad lig.',{fs:9})+lbl(96,196,'卵巢蒂 pedicle',{fs:9})+(sus<4?lbl(100,150,'懸韌帶 suspensory lig.',{fs:9}):'')+lbl(266,112,'proper lig.',{fs:9});
+  return svgWrap(s);
+}
+function sceneUterus(o={}){
+  const k=o.u||0,full=o.full;
+  let s=`<rect width="400" height="300" fill="${DR}"/><ellipse cx="200" cy="282" rx="170" ry="26" fill="#e6b199"/><ellipse cx="200" cy="285" rx="158" ry="19" fill="#4e1919"/>`;
+  s+=`<ellipse cx="${full?300:296}" cy="${full?268:282}" rx="${full?56:30}" ry="${full?32:11}" fill="#f0d79c" stroke="#c8a860" stroke-width="2"/>`;
+  s+=`<path d="M${full?140:118} 300 Q${full?182:168} ${full?262:276} ${full?250:270} ${full?262:282}" stroke="#f4f1e6" stroke-width="3" fill="none" opacity="${full?1:.55}"/>`;
+  s+=`<path d="M200 92 L110 40 L80 70 L190 200 Z" fill="#f6e6c6" opacity=".4"/><path d="M200 92 L290 40 L320 70 L210 200 Z" fill="#f6e6c6" opacity=".4"/>`;
+  const dy=k>=7?-36:0;
+  s+=`<g transform="translate(0 ${dy})" opacity="${k>=7?.75:1}">`;
+  s+=`<path d="M200 92 L110 40 M200 92 L290 40" stroke="#e29c94" stroke-width="15" stroke-linecap="round"/>`;
+  s+=`<ellipse cx="104" cy="36" rx="14" ry="10" fill="#f2e1bf" stroke="#c9ad7a"/><ellipse cx="296" cy="36" rx="14" ry="10" fill="#f2e1bf" stroke="#c9ad7a"/>`;
+  s+=clampG(92,30,-0.8,-0.6,{len:24,jaw:9})+clampG(308,30,0.8,-0.6,{len:24,jaw:9});
+  s+=`<line x1="200" y1="92" x2="200" y2="${k>=5?205:282}" stroke="#e29c94" stroke-width="22" stroke-linecap="round"/>`;
+  s+=`<path d="M190 100 V${k>=5?204:280} M210 100 V${k>=5?204:280}" stroke="#c0392b" stroke-width="1.6" opacity=".8"/>`;
+  if(o.torn) s+=`<path d="M189 150 l6 -5 l5 6 l6 -6 l5 5" stroke="#8e1f1f" stroke-width="3" fill="none"/><path d="M196 156 q4 10 0 14 q-4 -4 0 -14" fill="#c0392b"/>`;
+  if(k>=4) s+=clampG(200,198,-1,0,{len:56,jaw:16});
+  if(k>=7) s+=`<text x="200" y="76" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" stroke="rgba(0,0,0,.6)" stroke-width="3" paint-order="stroke">已切除：卵巢＋子宮</text>`;
+  s+=`</g>`;
+  if(k>=5&&k<7) s+=`<line x1="200" y1="213" x2="200" y2="282" stroke="#e29c94" stroke-width="22" stroke-linecap="round"/><path d="M190 214 V280 M210 214 V280" stroke="#c0392b" stroke-width="1.6" opacity=".8"/>`;
+  if(k<5) s+=`<ellipse cx="200" cy="244" rx="15" ry="9" fill="#d48a82" stroke="#b46a62" stroke-width="2"/>`;
+  else if(k<7) s+=`<ellipse cx="200" cy="244" rx="15" ry="9" fill="#d48a82" stroke="#b46a62" stroke-width="2"/>`;
+  if(k>=2&&k<7) s+=ligG(200,224,1,0,13)+ligG(200,228,1,0,13);
+  if(k>=3&&k<7) s+=ligG(200,234,1,0,13);
+  if(k>=7) s+=`<text x="200" y="262" text-anchor="middle" font-size="12" font-weight="700" fill="#7dffb0" stroke="rgba(0,0,0,.6)" stroke-width="3" paint-order="stroke">✓ 殘端已放回腹腔</text>`;
+  if(k>=6&&k<7) s+=`<path d="M214 216 L270 190 M214 220 L272 196" stroke="#7b8896" stroke-width="3.2" stroke-linecap="round"/>`;
+  if(k>=1&&k<5) s+=arrowG(250,160,250,110,'往頭側牽引');
+  if(o.mark&&k<2) s+=`<circle cx="${f(o.mark.x)}" cy="${f(o.mark.y)}" r="9" fill="none" stroke="#2ecc71" stroke-width="3"/>`;
+  s+=lbl(232,150,'子宮體 uterine body',{a:'start',fs:9})+lbl(222,248,'子宮頸 cervix',{a:'start',fs:9})+lbl(150,102,'子宮角',{fs:9})+lbl(250,102,'子宮角',{fs:9});
+  s+=(full||LEARN())?lbl(full?150:136,full?262:272,'輸尿管 ureter',{fs:9,always:full}):'';
+  s+=lbl(full?318:330,full?272:276,'膀胱',{fs:9});
+  s+=lbl(176,130,'子宮動靜脈',{a:'end',fs:9});
+  return svgWrap(s);
+}
+function sceneClosure(o={}){
+  const d=o.done||0;
+  let s=`<rect width="400" height="300" fill="#dfe8eb"/><rect y="158" width="400" height="142" fill="#561c1c"/>`;
+  s+=`<ellipse cx="120" cy="226" rx="44" ry="26" fill="#d98d82" opacity=".7"/><ellipse cx="280" cy="236" rx="52" ry="28" fill="#d98d82" opacity=".7"/>`;
+  const L=[[40,18,'#efc1aa'],[58,40,'#f6dfa0'],[98,8,'#eef2f4'],[106,44,'#c0544e'],[150,8,'#ece0df']];
+  L.forEach(([y,h,c])=>{s+=`<rect x="0" y="${y}" width="400" height="${h}" fill="${c}"/>`;});
+  s+=`<path d="M0 98 H400 M0 106 H400 M0 150 H400" stroke="#c9d3d8" stroke-width="1"/>`;
+  s+=`<polygon points="174,40 226,40 207,158 193,158" fill="#561c1c"/>`;
+  if(d>=1) s+=`<rect x="188" y="98" width="24" height="8" fill="#eef2f4"/><rect x="190" y="106" width="20" height="44" fill="#c0544e"/><rect x="192" y="150" width="16" height="8" fill="#ece0df"/>
+    <ellipse cx="200" cy="104" rx="24" ry="9" fill="none" stroke="#7d4cc2" stroke-width="2.6"/><circle cx="200" cy="95" r="3" fill="#7d4cc2"/>`;
+  if(d>=2) s+=`<rect x="181" y="58" width="38" height="40" fill="#f6dfa0"/><ellipse cx="200" cy="80" rx="18" ry="13" fill="none" stroke="#9c6fd6" stroke-width="2.2"/>`;
+  if(d>=3) s+=`<rect x="173" y="40" width="54" height="18" fill="#efc1aa"/><ellipse cx="200" cy="48" rx="14" ry="12" fill="none" stroke="#2d6cdf" stroke-width="2.4"/><path d="M196 36 l4 -6 l4 6" stroke="#2d6cdf" stroke-width="2" fill="none"/>`;
+  const hi=[null,[58,40],[40,18]][d];
+  if(hi) s+=`<rect x="2" y="${hi[0]-2}" width="396" height="${hi[1]+4}" fill="none" stroke="#ffb400" stroke-width="3" stroke-dasharray="7 4"/>`;
+  const tl=(y,t)=>`<text x="394" y="${y}" text-anchor="end" font-size="11" font-weight="600" fill="#1d2b2a" stroke="rgba(255,255,255,.85)" stroke-width="3" paint-order="stroke">${t}</text>`;
+  s+=tl(53,'皮膚 skin')+tl(82,'皮下組織 subcutis')+tl(104,'腹直肌外鞘 external rectus sheath'+(d>=1?'（張力層）':''))+tl(134,'腹直肌 rectus abdominis')+tl(156,'內鞘／腹膜 peritoneum');
+  s+=`<text x="10" y="24" font-size="12" font-weight="700" fill="#1d2b2a">腹壁切口示意剖面</text>`;
+  s+=`<text x="10" y="290" font-size="11" fill="#f3d0c8">腹腔 abdominal cavity</text>`;
+  return svgWrap(s);
+}
+function scenePostop(){
+  const c=P().coat;
+  return svgWrap(`<rect width="400" height="300" fill="#dfe8ea"/><rect y="230" width="400" height="70" fill="#c7d1d6"/>
+  <ellipse cx="200" cy="232" rx="170" ry="40" fill="#9ccfe0"/><path d="M60 232 q140 30 280 0" stroke="#7fb6ca" stroke-width="3" fill="none"/>
+  <ellipse cx="220" cy="196" rx="110" ry="54" fill="${c.fur}"/><path d="M300 214 Q340 240 280 248 Q190 254 160 236" stroke="${c.fur}" stroke-width="16" fill="none" stroke-linecap="round"/>
+  <path d="M200 150 v20 M230 146 v22 M260 150 v20" stroke="${c.stripe}" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+  <circle cx="118" cy="170" r="38" fill="${c.fur}"/><path d="M92 146 L86 112 L112 136 Z M138 140 L150 108 L152 144 Z" fill="${c.fur}"/>
+  <path d="M100 172 q8 6 16 0 M126 168 q8 6 16 0" stroke="#3b2f2a" stroke-width="2.6" fill="none"/>
+  <path d="M146 136 L176 150 L168 214 L132 212 L72 236 L46 118 Z" fill="#ffffff" opacity=".45" stroke="#c7d6dc" stroke-width="2"/>
+  <text x="310" y="120" font-size="22" fill="#6f8790">z</text><text x="328" y="98" font-size="17" fill="#6f8790">z</text><text x="342" y="80" font-size="13" fill="#6f8790">z</text>
+  <g transform="translate(330 30)"><rect x="-6" y="0" width="12" height="54" rx="6" fill="#fff" stroke="#8a9aa2" stroke-width="2"/><circle cx="0" cy="58" r="9" fill="#e74c3c"/><rect x="-2" y="20" width="4" height="36" fill="#e74c3c"/></g>
+  <text x="20" y="34" font-size="15" font-weight="700" fill="#2c4a52">恢復室 Recovery</text>
+  <text x="20" y="54" font-size="12" fill="#56707a">伊莉莎白頸圈・保溫・持續止痛</text>`);
+}
+
+/* ============================================================
+   關卡資料（依 Fossum 4e Ch27 與 Bushby 2020）
+   ============================================================ */
+const STEPS_PED_A=[
+  {t:'在卵巢蒂尾側的闊韌帶上，以止血鉗或手指戳一個洞（開窗）',why:'開窗讓鉗子與結紮線能單獨包住卵巢蒂。'},
+  {t:'在卵巢的「體側」（遠離卵巢一側）跨卵巢蒂夾上三支 Rochester-Carmalt',why:'最深的鉗壓出結紮溝槽、中間鉗夾持殘端、最靠卵巢的鉗防止回流出血（Fossum p.791）。'},
+  {t:'移除最深（最靠體側）的那一支鉗，留下壓痕溝槽 (crush groove)',why:'結紮線放在溝槽中較不易滑脫；也可在收緊時「閃一下」(flash) 鬆開。'}
+];
+const DIS_PED_A=[
+  {t:'先剪斷卵巢蒂，再補夾止血鉗',why:'先剪後夾會立刻大出血，且殘端可能縮回腹腔深處。'},
+  {t:'只在卵巢與子宮角之間（卵巢側）夾一支鉗就好',why:'鉗子必須夾在卵巢的體側；夾在卵巢側無法控制卵巢動靜脈。'}
+];
+const STEPS_PED_B=[
+  {t:'在第一道結紮的體側，再加一道環形結紮 (circumferential ligature)',why:'若貫穿結紮的針刺破血管，第二道環形結紮可控制出血（Fossum p.791）。'},
+  {t:'在中間鉗與最靠卵巢的鉗之間，切斷卵巢蒂',why:'留下有結紮與中間鉗的殘端，最靠卵巢的鉗跟著卵巢走、防止回流出血。'},
+  {t:'打開卵巢囊 (ovarian bursa)，確認整顆卵巢都在切下的組織上',why:'避免卵巢殘留症候群 (ovarian remnant syndrome)。'},
+  {t:'以鑷子夾住殘端，鬆開中間鉗，確認無出血後再放回腹腔',why:'若出血，立刻重新夾住並再結紮（Fossum p.791）。'}
+];
+const DIS_PED_B=[
+  {t:'用外科結 (surgeon\'s knot) 結紮血管',why:'Fossum p.76：外科結不建議用於血管結紮；應以方結 (square knot) 疊加 3–4 個 throws。'},
+  {t:'鬆開鉗子後立刻放手，讓殘端自行縮回腹腔',why:'必須先夾住殘端觀察有無出血；殘端縮回後若出血，會很難找回。'}
+];
+
+const STAGES=[
+/* 1 */{id:'preop',title:'術前評估',en:'Pre-operative assessment',sim:0,scene:()=>scenePreop(),
+  ref:'Fossum 4e Ch5 p.38；Ch27 p.785–789；AAFP 早期結紮聲明',
+  learn:`<ul><li>禁食：成貓 6–12 小時；16 週以下幼貓不超過 4–8 小時（避免低血糖）。不需禁水。</li>
+  <li>確認是否發情／懷孕：子宮脆弱、血管怒張，出血風險升高。</li>
+  <li>誘導前排空膀胱：脹大的膀胱會把膀胱三角拉向頭側，增加輸尿管被誤紮的風險。</li>
+  <li>7 週齡以上即可安全結紮（Fossum Box 27-4）；The Cat Group 建議約 16 週。</li>
+  <li>健康動物的選擇性 OHE 不需預防性抗生素。</li></ul>`,
+  tasks:[
+  {type:'checklist',prompt:'病患入院。下列哪些是麻醉前應完成的事項？（可複選）',ref:'Fossum 4e p.38, 786, 789',items:[
+    {t:'完整理學檢查（體溫、心跳、呼吸、心肺聽診、黏膜顏色）',ok:true,why:'評估健康狀態與麻醉風險。'},
+    {t:'精確秤重，作為計算麻醉藥劑量的依據',ok:true,why:'貓的體重小，劑量誤差影響大。下一關要用這個體重計算劑量。'},
+    {t:'確認是否發情或懷孕（病史、觸診、外陰）',ok:true,why:'發情或懷孕時子宮脆弱、血管怒張，出血風險升高（Fossum p.791, 807）。'},
+    {t:'麻醉誘導前讓貓排尿，或輕壓排空膀胱',ok:true,flag:'bladder',why:'脹大的膀胱會把膀胱三角拉向頭側，干擾子宮體暴露並增加輸尿管誤紮風險（Fossum p.789, 807）。'},
+    {t:'術前常規給予預防性抗生素',ok:false,why:'選擇性 OHE 屬乾淨手術，不需預防性抗生素（Fossum p.786）。1-1-1 研究全程未用抗生素，感染率 0%。'},
+    {t:'前一天晚上開始禁水',ok:false,why:'飲水不需限制，只需禁食（Talukder 2026：water ad libitum）。'},
+    {t:'入院後先在病房把腹部剃毛，再回籠等待手術',ok:false,why:'剃毛應在手術前、於手術室外的準備區進行；太早剃毛會增加皮膚刮傷與細菌增生（Fossum p.38）。'}]},
+  {type:'choice',prompt:()=>`${P().name}（${P().ageText}）術前應禁食多久？`,ref:'Fossum 4e p.38, 785, 789',noShuffle:true,options:()=>[
+    {t:'不需禁食',ok:false,why:'麻醉中可能嘔吐，造成吸入性肺炎。'},
+    {t:'4–8 小時（不宜更久）',ok:P().kitten,why:P().kitten?'幼貓肝醣儲存少，禁食過久易低血糖，建議不超過 4–8 小時（Fossum p.789）。':'4–8 小時是 16 週以下幼貓的建議值；成貓建議 6–12 小時。'},
+    {t:'6–12 小時',ok:!P().kitten,why:P().kitten?'對 16 週以下幼貓太久，可能造成低血糖（Fossum p.785）。':'成貓建議禁食 6–12 小時（Fossum Ch5 p.38；Ch27 另列 12–18 小時）。'},
+    {t:'24 小時以上',ok:false,why:'過度禁食沒有好處，反而增加低血糖與脫水風險。'}]},
+  {type:'choice',when:()=>P().estrus,prompt:'病史：最近幾天一直叫春、在地上打滾、翹屁股，外陰略腫脹。你判斷她正在發情。下列何者正確？',ref:'Fossum 4e p.791, 807；The Cat Group',options:[
+    {t:'可以腹中線入路手術，但要預期子宮脆弱、血管怒張，止血要更謹慎（需結紮闊韌帶）',ok:true,why:'Fossum 建議發情期要結紮闊韌帶、小心夾鉗；The Cat Group 指出發情母貓較適合腹中線入路。本模擬將繼續進行手術。'},
+    {t:'改用側腹 (flank) 小切口，以減少出血',ok:false,why:'The Cat Group：發情或懷孕母貓的子宮脆弱，腹中線入路暴露較佳。'},
+    {t:'與一般病例完全相同，不需特別注意',ok:false,why:'發情期出血是 OHE 主要的併發症來源之一（Fossum p.807）。'}]},
+  {type:'choice',when:()=>P().kitten,prompt:'這是一隻未滿 16 週的幼貓。麻醉時要特別注意哪些風險？',ref:'Fossum 4e p.785；AAFP 早期結紮聲明',options:[
+    {t:'低血糖、低體溫、心搏過緩',ok:true,why:'幼貓肝功能未成熟、體表面積大、心輸出量依賴心跳。要保溫、縮短禁食、備妥抗膽鹼藥（Fossum p.785）。'},
+    {t:'高血壓與高血糖',ok:false,why:'幼貓的問題正好相反：容易低血糖。'},
+    {t:'幼貓不能結紮，必須等到 6 個月以上',ok:false,why:'AAFP 與 The Cat Group：8–12 週以上的早期結紮是安全的（Fossum：7 週以上）。'}]}
+  ]},
+/* 2 */{id:'anes',title:'麻醉與止痛',en:'Anesthesia & analgesia',sim:3,scene:()=>sceneAnes(),
+  ref:'Fossum 4e Table 27-3, p.783–786',
+  learn:`<ul><li>多模式止痛：鎮靜／誘導 ＋ opioid ＋ NSAID（貓只給單次）＋ 局部麻醉。</li>
+  <li>Fossum Table 27-3 的貓 IM 組合：dexmedetomidine 33 µg/kg ＋ butorphanol 0.66 mg/kg ＋ ketamine 6.6 mg/kg（IV 用半量）。</li>
+  <li>維持：iso／sevoflurane；開腹時輸液 10–20 ml/kg/h。</li>
+  <li>16 週以下幼貓：不用 acepromazine 與 NSAID，備好抗膽鹼藥。</li></ul>`,
+  tasks:[
+  {type:'checklist',prompt:'選出本例麻醉止痛方案「應該包含」的項目（可複選）',ref:'Fossum 4e Table 27-3, p.784–786',items:()=>[
+    {t:'IM 誘導：dexmedetomidine ＋ butorphanol ＋ ketamine',ok:true,why:'Fossum Table 27-3 的貓肌肉注射組合。'},
+    {t:'氣管插管，以 isoflurane／sevoflurane 維持，並給靜脈輸液',ok:true,why:'開腹時輸液 10–20 ml/kg/h（Fossum p.784）。'},
+    {t:'切口線局部浸潤 lidocaine（貓總量 ≤ 2–4 mg/kg）',ok:true,why:'局部麻醉是多模式止痛的一環；貓對 lidocaine 較敏感，要注意總量。'},
+    {t:'術後持續給 opioid（buprenorphine 0.01–0.02 mg/kg q6–12h）',ok:true,why:'Fossum：在貓 buprenorphine 的止痛效果優於 morphine。'},
+    {t:'單次 meloxicam（NSAID）',ok:!P().kitten,why:P().kitten?'16 週以下幼貓不給 NSAID（Fossum p.785）。':'NSAID 是多模式止痛的一環，但在貓只能給單次（FDA 黑框警告）。'},
+    {t:'meloxicam 每天給，連續 5 天',ok:false,why:'貓重複給予 meloxicam 有急性腎損傷風險（FDA 黑框警告），只能給單次。'},
+    {t:'只用 xylazine ＋ ketamine，不另外給止痛藥',ok:false,why:'1-1-1 研究採用這個方案，作者自己也承認它缺少 opioid 與局部麻醉，達不到多模式止痛標準。'},
+    {t:'術前預防性給 cefazolin',ok:false,why:'選擇性 OHE 不需預防性抗生素（Fossum p.786）。'}]},
+  {type:'dose',ref:'Fossum 4e Table 27-3',rows:[
+    {drug:'Dexmedetomidine',dose:33,du:'µg/kg',conc:500,cu:'0.5 mg/ml（= 500 µg/ml）'},
+    {drug:'Butorphanol',dose:0.66,du:'mg/kg',conc:10,cu:'10 mg/ml'},
+    {drug:'Ketamine',dose:6.6,du:'mg/kg',conc:100,cu:'100 mg/ml'}]},
+  {type:'event',key:'deep',when:()=>S.flags.dose==='high'},
+  {type:'event',key:'light',when:()=>S.flags.dose==='low'}
+  ]},
+/* 3 */{id:'pos',title:'手術擺位',en:'Patient positioning',sim:2,
+  scene:()=>sceneExterior({tube:true,anes:true,ties:S.prog.ties,warm:S.flags.warm}),
+  ref:'Bushby 2020 (JFMS 22:208)；Fossum 4e p.785, 789',
+  learn:`<ul><li>腹中線入路：仰臥 (dorsal recumbency)。</li><li><b>只綁後肢</b>。綁前肢會讓背肌緊繃，卵巢更難拉出（Bushby 2020）。</li><li>保溫：麻醉加開腹後體溫會持續下降，幼貓下降得更快。</li></ul>`,
+  tasks:[
+  {type:'choice',grid:true,prompt:'以腹中線入路進行 OHE，應將貓擺成哪種姿勢？',ref:'Fossum 4e p.789',options:[
+    {t:'仰臥 dorsal recumbency',img:miniPose('dorsal'),ok:true,why:'腹中線入路需要仰臥，腹部朝上。'},
+    {t:'側臥 lateral recumbency',img:miniPose('lateral'),ok:false,why:'側臥用於側腹 (flank) 入路（例如 1-1-1 技術採左側腹），不適合腹中線入路。'},
+    {t:'俯臥 sternal recumbency',img:miniPose('sternal'),ok:false,why:'俯臥時無法接近腹部。'}]},
+  {type:'checklist',prompt:'仰臥之後的固定與準備，哪些做法正確？（可複選）',ref:'Bushby 2020；Fossum 4e p.785',after:()=>{S.prog.ties=true;},items:[
+    {t:'綁住兩後肢',ok:true,why:'固定骨盆，保持腹部平直。'},
+    {t:'把兩前肢往頭側拉直綁緊',ok:false,why:'Bushby 2020：綁前肢會讓背部肌肉緊繃，卵巢更難拉出切口。前肢不要綁。'},
+    {t:'身體下方鋪保溫墊或暖風毯',ok:true,flag:'warm',why:'麻醉加開腹會快速失溫，幼貓尤其明顯。沒保溫的話，監視器上的體溫會一路往下掉。'},
+    {t:'確認氣管插管固定、呼吸管路通暢',ok:true,why:'仰臥時要再確認一次通氣。'}]}
+  ]},
+/* 4 */{id:'prep',title:'無菌準備',en:'Aseptic preparation',sim:5,
+  scene:()=>{const k=S.prog.prep||0;return sceneExterior({tube:true,anes:true,ties:true,warm:S.flags.warm,clipped:k>=1,lube:k>=2,scrub:k>=4?(k>=5?2:1):0,drapes:k>=6?4:0,fen:k>=7});},
+  ref:'Fossum 4e Ch5 p.38–43',
+  learn:`<ul><li>剃毛：劍突到恥骨，兩側範圍要寬，而且在手術室外進行。</li><li>刷洗：由中心向外畫圈，海綿不回頭。CHG 刷兩次、各 30 秒，或用 2% CHG＋酒精單次塗抹，再等 2–3 分鐘乾燥。</li><li>鋪巾：四角巾逐塊鋪在消毒區邊緣，只能往外移；用 Backhaus 毛巾鉗固定，最後蓋開窗巾。</li></ul>`,
+  tasks:[
+  {type:'choice',prompt:'剃毛的範圍應該是？',ref:'Fossum 4e p.38, 789',options:[
+    {t:'劍突到恥骨，往兩側腹部寬廣剃除（切口兩側預留約 20 cm 或至兩側腹）',ok:true,why:'範圍要大到即使延長切口，仍在無菌區內（Fossum p.38, 789）。'},
+    {t:'只剃預定切口周圍 2 cm',ok:false,why:'範圍太小：延長切口或巾單移位時就會污染。'},
+    {t:'整個腹部加上四肢',ok:false,why:'不必要，徒增皮膚刺激與時間。'}]},
+  {type:'sequence',key:'prep',prompt:'依正確順序點選無菌準備的步驟',ref:'Fossum 4e Ch5 p.38–43',steps:[
+    {t:'在手術室外剃毛，並以吸塵器吸除毛屑',why:'剃毛在準備區進行，避免毛屑進入手術室。'},
+    {t:'雙眼點眼藥膏，並做一般清潔刷洗',why:'麻醉中眨眼反射消失，要避免角膜乾燥。'},
+    {t:'移入手術室，擺位固定',why:''},
+    {t:'以 chlorhexidine／酒精由切口中心向外畫圈刷洗',why:'由乾淨處往髒處刷，海綿不可回到中心。'},
+    {t:'等待消毒液完全乾燥',why:'確保作用時間；酒精未乾就使用電燒可能起火（Fossum p.40）。'},
+    {t:'刷手並穿戴無菌衣手套者，逐塊鋪上四塊四角巾，以 Backhaus 毛巾鉗固定',why:'四角巾鋪下後只能往外移，不能往切口方向拉。'},
+    {t:'覆蓋開窗巾 (fenestrated drape)',why:'開窗巾可用 Allis 鉗固定，不要再用毛巾鉗穿透。'}],
+   distractors:[
+    {t:'由外圍向切口中心畫圈刷洗',why:'會把周邊皮膚的細菌帶回切口處。'},
+    {t:'鋪好巾單後，把四角巾往切口方向拉近一點',why:'巾單只能往外移；往內拉會把污染帶入無菌區（Fossum p.42）。'}]}
+  ]},
+/* 5 */{id:'inst',title:'器械台',en:'Instrument table',sim:1,scene:()=>sceneTray(),
+  ref:'Fossum 4e Ch7 p.53–62；Table 7-3 basic spay pack',
+  learn:`<ul><li>Fossum Table 7-3 的基本 spay pack：mosquito（彎、直各 2）、Kelly 2、Crile 2、Rochester-Carmalt 4、持針器、Brown-Adson、Allis 4、Backhaus 4、Metzenbaum、Mayo、縫線剪、Senn 拉鉤 2、#3 刀柄、spay hook、生理食鹽水碗、可顯影紗布 20 片。</li>
+  <li>Metzenbaum 只用於細緻組織，不可拿來剪縫線。</li><li>Rochester-Carmalt 的鉗齒是縱向的，適合夾卵巢蒂、子宮體這類大組織束。</li></ul>`,
+  tasks:[
+  {type:'match',prompt:'把器械拖曳到正確的用途上（也可以先點器械、再點用途）',ref:'Fossum 4e Ch7 p.53–62',pairs:[
+    {id:'scalpel',name:'手術刀',en:'#3 handle ＋ #10／#11 blade',use:'切開皮膚；#11 刀片用來戳開白線'},
+    {id:'metz',name:'Metzenbaum 剪',en:'Metzenbaum scissors',use:'細緻組織的分離與剪開（不可剪縫線）'},
+    {id:'mayo',name:'Mayo 剪',en:'Mayo scissors',use:'剪開緻密組織，例如延長白線切口'},
+    {id:'carmalt',name:'Rochester-Carmalt 鉗',en:'Rochester-Carmalt forceps',use:'夾住大組織束（卵巢蒂、子宮體）'},
+    {id:'mosq',name:'Mosquito 止血鉗',en:'Mosquito hemostat',use:'夾小血管；夾住 proper ligament 作牽引'},
+    {id:'nh',name:'持針器',en:'Mayo-Hegar needle holder',use:'夾持縫針進行縫合'},
+    {id:'adson',name:'Brown-Adson 鑷子',en:'Brown-Adson thumb forceps',use:'夾提組織，例如提起白線'},
+    {id:'hook',name:'Spay hook',en:'Snook / Covault ovariectomy hook',use:'從腹腔中勾出子宮角'},
+    {id:'towel',name:'Backhaus 毛巾鉗',en:'Backhaus towel clamp',use:'固定四角巾'}]},
+  {type:'choice',prompt:'縫合打完結，要剪斷縫線時應該用哪一把？',ref:'Fossum 4e p.54',options:[
+    {t:'Mayo 剪或縫線剪',ok:true,why:'Fossum：縫線用 Mayo 剪或專用縫線剪剪斷。'},
+    {t:'Metzenbaum 剪',ok:false,why:'Metzenbaum 是精細剪，剪縫線會使刃口變鈍。'},
+    {t:'手術刀',ok:false,why:'不精確，容易誤傷組織或割斷結。'}]},
+  {type:'choice',prompt:'Spay pack 裡的紗布為什麼要用 X 光可顯影 (radiopaque) 的，而且術前要清點數量？',options:[
+    {t:'關腹前清點，避免紗布遺留在腹腔；萬一數目不符，可用 X 光確認',ok:true,why:'遺留紗布會造成肉芽腫、粘連與瘻管。'},
+    {t:'顯影紗布的吸血量比較大',ok:false,why:'顯影線的目的是讓紗布在 X 光下看得到。'},
+    {t:'只是醫院的庫存管理',ok:false,why:'這是病患安全措施。'}]}
+  ]},
+/* 6 */{id:'inc',title:'切口定位',en:'Skin incision',sim:2,
+  scene:()=>sceneWindow({guides:LEARN(),inc:S.prog.inc}),
+  ref:'Fossum 4e p.789–790；Bushby 2020',
+  learn:`<ul><li>把臍到恥骨的距離分成三等份，貓切在<b>中段 1/3</b>，因為貓的子宮體位置偏尾側。</li><li>Bushby：切口中心在「臍與恥骨前緣的中點」。</li><li>切口長度：初學者 4–8 cm；熟練者 1–2 cm。</li></ul>`,
+  tasks:[
+  {type:'hotspot',prompt:'點選腹中線切口「中心點」的位置',ref:'Fossum 4e p.789–790；Bushby 2020',
+   judge:(x,y)=>{
+     if(x<112||x>288||y<10||y>290) return {ok:false,msg:'請點在開窗巾內的皮膚上。'};
+     if(Math.abs(x-200)>10) return {ok:false,msg:'偏離腹中線：會切到腹直肌，出血較多、癒合較差。切口應落在白線 (linea alba) 上。'};
+     if(y<95) return {ok:false,msg:'在臍的頭側，太前面了。貓的子宮體偏尾側，切口太前面很難拉出子宮體。'};
+     if(y<148) return {ok:false,msg:'在臍到恥骨的頭側 1/3。狗常用這個位置，但貓的子宮體偏尾側，Fossum 建議貓切在中段 1/3。'};
+     if(y<=202) return {ok:true,msg:'正確！切口在臍與恥骨之間的中段 1/3（Bushby：臍與恥骨前緣的中點），卵巢蒂與子宮體都能兼顧。'};
+     if(y<=255) return {ok:false,msg:'太偏尾側：子宮體容易處理，但卵巢蒂在腎臟後方，會很難拉出。'};
+     return {ok:false,msg:'已經超過恥骨前緣了。'};
+   },after:()=>{S.prog.inc=true;}},
+  {type:'choice',prompt:'對初學者而言，Fossum 建議的貓 OHE 皮膚切口長度約為？',ref:'Fossum 4e p.790；Bushby 2020；Talukder 2026',options:[
+    {t:'0.5–0.7 cm',ok:false,why:'這是 1-1-1 側腹技術的切口，屬於熟練術者的做法。'},
+    {t:'1–2 cm',ok:false,why:'Bushby 2020：熟練的高量結紮術者可用 1–2 cm；學習階段要先確保暴露充分。'},
+    {t:'4–8 cm',ok:true,why:'Fossum p.790：4–8 cm，暴露充分，能看清卵巢蒂與子宮體。熟練後可以縮短。'},
+    {t:'從劍突一路切到恥骨',ok:false,why:'切口過長會增加組織創傷、疼痛與縫合時間。'}]},
+  {type:'choice',prompt:'用手術刀切開皮膚時，正確的做法是？',ref:'Fossum 4e p.53',options:[
+    {t:'用 #10 刀片，刀片與皮膚垂直，以平順的一刀切開皮膚與皮下，露出白線',ok:true,why:'垂直切開可得到整齊、容易癒合的切緣。'},
+    {t:'刀片斜放、來回鋸切',ok:false,why:'會造成鋸齒狀切緣，癒合較差。'},
+    {t:'一刀直接切穿到腹腔',ok:false,why:'可能傷到脾臟、膀胱或腸道。白線要另外提起後再戳開。'}]}
+  ]},
+/* 7 */{id:'lap',title:'開腹',en:'Celiotomy',sim:2,
+  scene:()=>sceneWindow({inc:true,lin:true,open:S.prog.lap||0}),
+  ref:'Fossum 4e p.790；The Cat Group',
+  learn:`<ul><li>步驟：提起白線 → 刃口朝上戳開 → 用 Mayo 剪往頭側、尾側延長。</li><li>白線血管少、痛覺受器少（The Cat Group），而且可以提供縫合強度。</li></ul>`,
+  tasks:[
+  {type:'sequence',key:'lap',prompt:'依正確順序點選進入腹腔的步驟',ref:'Fossum 4e p.790',steps:[
+    {t:'用 Brown-Adson 鑷子夾起白線（腹直肌外鞘），把腹壁往上提起 (tent)',why:'提起腹壁，讓下方內臟遠離刀尖。'},
+    {t:'手術刀刃口朝上，戳開白線 (stab incision)',why:'刃口朝上，避免往下切到內臟。'},
+    {t:'確認進入腹腔後，用 Mayo 剪把白線切口往頭側、尾側延長',why:'剪刀伸入腹腔的那一葉要往上提，避免剪到內臟。'},
+    {t:'視需要用 Senn 拉鉤牽開腹壁',why:''}],
+   distractors:[
+    {t:'不提起腹壁，直接用刀往下壓切白線',why:'刀尖可能刺傷脾臟、膀胱或腸道。'},
+    {t:'用 Metzenbaum 剪剪開白線',why:'Metzenbaum 用於細緻組織；白線是緻密筋膜，要用 Mayo 剪（Fossum p.54）。'}]},
+  {type:'choice',prompt:'為什麼腹部手術要從白線 (linea alba) 進入？',ref:'The Cat Group；Fossum Ch19',options:[
+    {t:'白線是左右腹直肌之間的筋膜：血管少、痛覺受器較少，又能承受縫合張力',ok:true,why:'The Cat Group 認為白線的痛覺受器較少，這可能是中線入路比側腹入路更不痛的原因。'},
+    {t:'因為白線最薄，最容易切穿',ok:false,why:'重點不在厚薄，而是血管與神經少，筋膜也能承受縫合張力。'},
+    {t:'因為所有內臟都在白線正下方',ok:false,why:'和內臟位置無關。'}]}
+  ]},
+/* 8 */{id:'hook',title:'找出子宮角',en:'Locating the uterine horn',sim:2,
+  scene:()=>sceneInternal({}),
+  ref:'Fossum 4e p.790, Fig 27-5A；Bushby 2020',
+  learn:`<ul><li>Spay hook 的勾尖朝向腹壁，在腎臟尾側 2–3 cm 處沿腹壁滑到背側，再轉向中線勾起。</li>
+  <li>Fossum 從左側下鉤，Bushby 從右側下鉤，兩種做法都可以。</li>
+  <li>勾出來後要沿著它找到卵巢或子宮分岔處，才能確認是子宮角。</li>
+  <li>勾不到時：把膀胱往後翻，在結腸與膀胱之間找子宮體。</li></ul>`,
+  tasks:[
+  {type:'choice',prompt:'Spay hook 伸入腹腔時，勾尖應該朝向哪裡？',ref:'Fossum 4e p.790；Bushby 2020',options:[
+    {t:'勾尖朝向腹壁，沿腹壁滑到背側後，再轉向中線勾起',ok:true,why:'沿腹壁滑下可以避開腸道；到背側後轉向中線，勾住子宮角、闊韌帶或圓韌帶，再輕輕提起。'},
+    {t:'勾尖朝下，從腹腔正中央直接插下去',ok:false,why:'正中央是小腸與網膜，很容易勾到腸子。'},
+    {t:'勾尖朝上，在切口附近來回攪動',ok:false,why:'盲目攪動會造成組織創傷。'}]},
+  {type:'hotspot',prompt:'點選 spay hook 伸入的位置（左側或右側都可以）',ref:'Fossum 4e p.790；Bushby 2020',
+   judge:(x,y)=>{
+     if(((x-200)/150)**2+((y-150)/138)**2>1) return {ok:false,msg:'請點在腹腔內。'};
+     if(y<90) return {ok:false,msg:'太靠頭側了，這裡是腎臟與脾臟附近。下鉤點應在腎臟尾側 2–3 cm。'};
+     if(y>210) return {ok:false,msg:'這裡是膀胱，不要在膀胱附近盲勾。'};
+     if(x>=156&&x<=244) return {ok:false,msg:'正中央是小腸與網膜，很容易勾到腸子。應該沿著腹壁下鉤。'};
+     return {ok:true,msg:'正確！沿腹壁、在腎臟尾側約 2–3 cm 處下鉤（Fossum 用左側，Bushby 用右側）。'};
+   }},
+  {type:'event',key:'gut',when:()=>Math.random()<0.6},
+  {type:'choice',prompt:'勾出了一條管狀構造。怎麼確認它就是子宮角？',ref:'Fossum 4e p.790',options:[
+    {t:'沿著它往頭側追到卵巢，或往尾側追到子宮分岔處 (bifurcation)',ok:true,why:'Fossum p.790：勾出後一定要追蹤確認。'},
+    {t:'只要是粉紅色的管狀物就是子宮角',ok:false,why:'小腸、輸尿管也可能是粉紅色的管狀物。'},
+    {t:'會蠕動的就是子宮角',ok:false,why:'會蠕動、有腸繫膜血管弧的是小腸。'}]},
+  {type:'choice',prompt:'如果反覆下鉤都勾不到子宮角，下一步應該怎麼做？',ref:'Fossum 4e p.790',options:[
+    {t:'把膀胱往後翻 (retroflex)，在結腸與膀胱之間找子宮體，再循子宮體找子宮角',ok:true,why:'這是 Fossum p.790 的標準替代方法。'},
+    {t:'把 spay hook 移到腹腔中央多勾幾次',ok:false,why:'會增加腸道損傷的風險。'},
+    {t:'馬上把切口延長到劍突',ok:false,why:'需要時可以適度延長切口，但應先用正確的方法：翻膀胱找子宮體。'}]}
+  ]},
+/* 9 */{id:'sus',title:'處理懸韌帶',en:'Suspensory ligament',sim:2,
+  scene:()=>scenePedicle({side:'左',sus:S.prog.sus||0,ped:0,bleed:S.vs.bleed>0}),
+  ref:'Fossum 4e p.791, Fig 27-5B–C；Bushby 2020',
+  learn:`<ul><li>懸韌帶是卵巢蒂頭側那條緊繃的纖維帶，連到最後肋骨與腎臟附近，是卵巢拉不出切口的主要阻力。</li>
+  <li>Bushby：用 mosquito 夾住 proper ligament 往上提，懸韌帶就會繃緊，再拉斷或剪斷。</li>
+  <li>動作要控制好，避免撕裂卵巢血管，發情期尤其要小心。</li></ul>`,
+  tasks:[
+  {type:'sequence',key:'sus',prompt:'依序點選拉出卵巢、處理懸韌帶的步驟',ref:'Fossum 4e p.791；Bushby 2020',steps:[
+    {t:'手指握住子宮角，往尾側、內側輕輕牽引，讓卵巢靠近切口',why:''},
+    {t:'觸摸卵巢蒂頭側那條緊繃的纖維帶，這就是懸韌帶 (suspensory ligament)',why:'懸韌帶是卵巢拉不出來的主要阻力。'},
+    {t:'用 mosquito 止血鉗夾住 proper ligament（卵巢與子宮角之間），往上提供張力',why:'這是 Bushby 2020 的做法：張力會讓懸韌帶繃緊，更容易辨認。'},
+    {t:'用食指把懸韌帶往尾外側拉斷（或靠腎側剪斷），小心不要撕到卵巢血管',why:'斷開之後，卵巢就能拉出切口。'}],
+   distractors:[
+    {t:'不處理懸韌帶，直接用力把卵巢往外拉',why:'會撕裂卵巢血管，造成出血。'},
+    {t:'把 mosquito 夾在卵巢血管上當牽引',why:'會壓傷血管，也讓後續結紮更困難；牽引應該夾 proper ligament。'}]},
+  {type:'event',key:'tear',when:()=>Math.random()<(P().estrus?0.6:0.25)},
+  {type:'event',key:'hypo',when:()=>tempNow()<36.5}
+  ]},
+/* 10 */{id:'pedL',title:'左卵巢蒂結紮',en:'Ovarian pedicle — three-clamp technique',sim:4,
+  scene:()=>scenePedicle({side:'左',ped:S.prog.pedL||0,bleed:S.vs.bleed>0}),
+  ref:'Fossum 4e p.791, Fig 27-4, 27-5D–F；Bushby 2020',
+  learn:`<ul><li><b>三鉗法</b>：最深的鉗壓出溝槽，中間鉗夾住殘端，最靠卵巢的鉗防止回流出血。</li>
+  <li>移除最深的鉗之後，在溝槽處做 <b>8 字貫穿結紮</b>，再於體側加一道<b>環形結紮</b>，縫線用 2-0／3-0 可吸收線。</li>
+  <li>切斷後要<b>打開卵巢囊</b>確認卵巢完整；鬆開鉗子時一定要觀察殘端有無出血。</li>
+  <li>Bushby 2020：學生在訓練初期打的結紮，超過 50% 沒有完全閉塞血管。</li></ul>`,
+  tasks:[
+  {type:'choice',prompt:'結紮卵巢蒂應該選用哪種縫線？',ref:'Fossum 4e p.791, 807–808',options:[
+    {t:'2-0 或 3-0 合成可吸收線（PDS、Monocryl、Maxon、Vicryl）',ok:true,why:'Fossum p.791；1-1-1 研究用的是 3-0 PDS。'},
+    {t:'2-0 絲線 (silk)',ok:false,why:'不可吸收的多股線會形成瘻管與肉芽腫（Fossum p.808）。'},
+    {t:'5-0 尼龍線',ok:false,why:'太細又不可吸收，不適合結紮血管組織束。'}]},
+  {type:'sequence',key:'pedL',prompt:'三鉗法 (three-clamp technique)：依序點選步驟',ref:'Fossum 4e p.791, Fig 27-5',steps:STEPS_PED_A,distractors:DIS_PED_A},
+  {type:'tension',key:'pedL',base:3,flag:'looseL',prompt:'在溝槽處做 8 字貫穿結紮 (figure-eight transfixing ligature)：指針進入綠色區時按「收緊」'},
+  {type:'sequence',key:'pedL',base:4,prompt:'繼續完成卵巢蒂處理',ref:'Fossum 4e p.791',steps:STEPS_PED_B,distractors:DIS_PED_B},
+  {type:'event',key:'pbleed',when:()=>S.flags.looseL},
+  {type:'choice',prompt:'為什麼一定要打開卵巢囊 (ovarian bursa) 檢查？',ref:'Fossum 4e p.791, 807',options:[
+    {t:'確認整顆卵巢都已切除，避免卵巢殘留症候群 (ovarian remnant syndrome)',ok:true,why:'殘留的卵巢組織會讓貓再次發情，也可能引起殘端子宮蓄膿 (stump pyometra)。'},
+    {t:'檢查卵巢上有沒有寄生蟲',ok:false,why:'這不是例行檢查的目的。'},
+    {t:'讓卵巢比較好縫合',ok:false,why:'卵巢是要切除的，不需要縫合。'}]}
+  ]},
+/* 11 */{id:'pedR',title:'右卵巢蒂結紮',en:'Contralateral ovarian pedicle',sim:3,
+  scene:()=>scenePedicle({side:'右',ped:S.prog.pedR||0,bleed:S.vs.bleed>0}),
+  ref:'Fossum 4e p.791；Bushby 2020',
+  learn:`<ul><li>沿著已拉出的子宮角往尾側找到分岔處，再沿另一側子宮角往頭側，就能拉出對側卵巢。</li>
+  <li>右腎與右側卵巢位置較靠頭側，懸韌帶通常比較難處理；暴露不足時可以向頭側延長切口。</li>
+  <li>結紮方法與左側相同。</li></ul>`,
+  tasks:[
+  {type:'choice',prompt:'怎麼找到右側卵巢？',ref:'Fossum 4e p.791；Bushby 2020',options:[
+    {t:'沿已拉出的子宮角往尾側找到分岔處，再沿右側子宮角輕輕往外牽引',ok:true,why:'Bushby 2020：輕輕往尾側牽引子宮角，就能帶出對側卵巢。'},
+    {t:'再用 spay hook 往腹腔中央盲勾一次',ok:false,why:'有子宮角可以循著找，就不需要再盲勾。'},
+    {t:'直接把切口延長到劍突',ok:false,why:'循子宮角就能找到，不需要大幅延長切口。'}]},
+  {type:'choice',prompt:'右側卵巢的位置比左側靠頭側。處理右側懸韌帶時，下列何者正確？',ref:'Fossum 4e p.791',options:[
+    {t:'一樣用 mosquito 夾住 proper ligament 牽引，再拉斷懸韌帶；暴露不足時可往頭側延長切口',ok:true,why:'不要勉強在視野不清的情況下操作。'},
+    {t:'右側不需要處理懸韌帶',ok:false,why:'左右兩側都有懸韌帶。'},
+    {t:'不拉出切口，直接在腹腔內盲目結紮',ok:false,why:'看不清楚就結紮，可能誤紮輸尿管或結紮不完全。'}]},
+  {type:'sequence',key:'pedR',prompt:'右側三鉗法：依序點選步驟',ref:'Fossum 4e p.791',steps:STEPS_PED_A,distractors:DIS_PED_A},
+  {type:'tension',key:'pedR',base:3,flag:'looseR',prompt:'8 字貫穿結紮：指針進入綠色區時按「收緊」'},
+  {type:'sequence',key:'pedR',base:4,prompt:'繼續完成右側卵巢蒂處理',ref:'Fossum 4e p.791',steps:STEPS_PED_B,distractors:DIS_PED_B},
+  {type:'event',key:'pbleed',when:()=>S.flags.looseR}
+  ]},
+/* 12 */{id:'ut',title:'子宮體結紮',en:'Uterine body ligation',sim:4,
+  scene:()=>sceneUterus({u:S.prog.ut||0,mark:S.prog.utMark,full:!S.flags.bladder,torn:S.prog.torn}),
+  ref:'Fossum 4e p.791–793, Fig 27-5G–H；The Cat Group',
+  learn:`<ul><li>闊韌帶：發情、懷孕，或闊韌帶血管多、脂肪多時要結紮；其他情況可以直接撕開或剪斷。</li>
+  <li>結紮位置在<b>子宮頸頭側</b>：先做 8 字貫穿結紮，把兩側子宮動靜脈包進去，再在靠子宮頸處加一道環形結紮。</li>
+  <li>在結紮的頭側夾一支 Carmalt，從兩者之間切斷。殘端要夾住、確認不出血，送回腹腔後才放開。</li>
+  <li>貓的子宮（尤其發情時）很脆弱，鉗子可能直接把它<b>夾斷</b>而不是壓扁（Fossum p.793）。</li></ul>`,
+  tasks:[
+  {type:'choice',prompt:()=>'子宮兩側的闊韌帶 (broad ligament) 需要結紮嗎？'+(P().estrus?'（提醒：本例正在發情）':''),ref:'Fossum 4e p.791–793',options:()=>[
+    {t:'發情、懷孕，或闊韌帶血管多、脂肪多時要結紮；否則可以直接撕開或剪斷',ok:true,why:'Fossum p.791–793。'+(P().estrus?'本例正在發情，應該結紮闊韌帶。':'')},
+    {t:'任何情況都不需要處理',ok:false,why:'發情期闊韌帶的血管很明顯，不結紮會出血。'},
+    {t:'一律用絲線結紮',ok:false,why:'不可吸收的多股線容易形成肉芽腫或瘻管。'}]},
+  {type:'hotspot',prompt:'點選子宮體的結紮位置',ref:'Fossum 4e p.791–793；The Cat Group',
+   judge:(x,y)=>{
+     if(x<180||x>220||y<88) return {ok:false,msg:'請點在子宮體（中間那條粗管）上。'};
+     if(y<200) return {ok:false,msg:'太靠頭側：會留下太多子宮組織。若有卵巢組織殘留，日後可能發生殘端子宮蓄膿 (stump pyometra)。腹中線入路的優點，就是能把子宮切除到子宮頸附近。'};
+     if(y<=234) return {ok:true,msg:'正確！在子宮頸頭側結紮，切除大部分子宮，又不會傷到子宮頸與輸尿管。'};
+     if(y<=253) return {ok:false,msg:'這是子宮頸本身：組織厚實，結紮不易確實，而且太靠近輸尿管。'};
+     return {ok:false,msg:'這已經是子宮頸尾側（陰道），靠近膀胱三角與輸尿管，誤紮風險很高。'};
+   },after:p=>{S.prog.utMark=p;}},
+  {type:'event',key:'ureter',when:()=>!S.flags.bladder},
+  {type:'sequence',key:'ut',prompt:'開始結紮子宮體：依序點選',ref:'Fossum 4e p.791–793',steps:[
+    {t:'把子宮往頭側牽引，暴露子宮頸',why:''},
+    {t:'在子宮頸頭側做 8 字貫穿結紮，把兩側子宮動靜脈包進去',why:'用縫針穿過子宮體，兩邊各包住一側的子宮血管（Fossum p.793）。'}],
+   distractors:[{t:'先用好幾支 Carmalt 在子宮體上用力夾碎，再結紮',why:'貓的子宮（尤其發情時）鉗子會把它切斷而不是壓碎，可能在結紮前就斷掉（Fossum p.793）。'}]},
+  {type:'tension',key:'ut',base:1,flag:'looseU',prompt:'收緊子宮體的 8 字貫穿結紮'},
+  {type:'event',key:'friable',when:()=>P().estrus&&Math.random()<0.7},
+  {type:'sequence',key:'ut',base:2,prompt:'完成子宮體切除',ref:'Fossum 4e p.791–793',steps:[
+    {t:'在靠近子宮頸處再加一道環形結紮',why:''},
+    {t:'在結紮的頭側夾上一支 Carmalt',why:'防止切下的子宮回流出血。'},
+    {t:'在 Carmalt 與結紮之間切斷子宮體',why:''},
+    {t:'用鑷子夾住殘端，檢查有無出血',why:''},
+    {t:'把殘端送回腹腔後才放開',why:'殘端若在切口外就放開，會縮回腹腔，出血時很難找回。'}],
+   distractors:[{t:'切斷後立刻放手，讓殘端自己縮回腹腔',why:'沒有確認止血就放手，出血時很難再找到殘端。'}]},
+  {type:'event',key:'ubleed',when:()=>S.flags.looseU}
+  ]},
+/* 13 */{id:'chk',title:'止血檢查與清點',en:'Hemostasis check & sponge count',sim:2,
+  scene:()=>sceneInternal({stumps:true,checked:S.prog.chk||{},bladderFull:false}),
+  ref:'Fossum 4e p.791–793, 807',
+  learn:`<ul><li>關腹前逐一檢查兩側卵巢蒂殘端與子宮殘端。出血是 OHE 最常見的嚴重併發症。</li><li>清點紗布與器械數量，數目必須和術前一致。</li><li>持續注意體溫：麻醉時間越長，失溫越多。</li></ul>`,
+  tasks:[
+  {type:'multispot',prompt:'關腹前，在畫面上逐一點選、檢查三個殘端是否出血',ref:'Fossum 4e p.791–793, 807',
+   spots:[{id:'L',x:124,y:100,label:'左卵巢蒂殘端'},{id:'R',x:276,y:100,label:'右卵巢蒂殘端'},{id:'U',x:200,y:224,label:'子宮殘端'}]},
+  {type:'choice',prompt:'紗布清點：術前是 10 片，現在檯面上只數到 9 片。你應該怎麼做？',ref:'Fossum 4e Table 7-3',options:[
+    {t:'暫停關腹，在腹腔與巾單間尋找第 10 片；找不到就照 X 光確認',ok:true,why:'這正是使用可顯影紗布、術前清點的目的。'},
+    {t:'可能是一開始數錯了，直接關腹',ok:false,why:'遺留紗布會造成異物肉芽腫、粘連，甚至需要再次開腹。'},
+    {t:'關腹後再請助手慢慢找',ok:false,why:'一定要在關腹前確認。'}]},
+  {type:'event',key:'hypo',when:()=>tempNow()<36.5}
+  ]},
+/* 14 */{id:'close',title:'三層縫合',en:'Abdominal closure',sim:6,
+  scene:()=>sceneClosure({done:S.prog.close||0}),
+  ref:'Fossum 4e Ch19 p.363；Ch27 p.793；Bushby 2020',
+  learn:`<ul><li>腹壁：縫合要確實包含<b>腹直肌外鞘</b>（張力層），不要縫腹膜。用可吸收單股線，咬入筋膜 4–10 mm，針距 5–10 mm。</li>
+  <li>連續縫合的兩端各打 6–8 個 throws。</li><li>皮下：可吸收線單純連續縫合，消除死腔。</li><li>皮膚：不可吸收單股線間斷縫合（10–14 天拆線），或可吸收線皮內縫合。</li>
+  <li>術後第 3–5 天裂開，多半是沒有縫到筋膜，或結打得不牢。</li></ul>`,
+  tasks:[
+  {type:'choice',prompt:'第一層（腹壁）：縫合時一定要確實縫到、負責承受張力的是哪一層？',ref:'Fossum 4e p.363',options:[
+    {t:'腹直肌外鞘 (external rectus sheath)',ok:true,why:'外鞘就是 holding layer。術後 3–5 天裂開，多半是沒有縫到筋膜，或結打得不牢（Fossum p.363）。'},
+    {t:'腹膜 (peritoneum)',ok:false,why:'不需要縫腹膜，縫了反而增加粘連（Fossum p.363）。'},
+    {t:'皮下脂肪',ok:false,why:'脂肪沒有張力強度。'}]},
+  {type:'choice',prompt:'腹壁（白線）應該用什麼縫線與縫法？',ref:'Fossum 4e p.363',after:()=>{S.prog.close=1;},options:[
+    {t:'3-0 PDS 等可吸收單股線，單純間斷或單純連續縫合；每針咬入筋膜 4–10 mm、針距 5–10 mm；連續縫合的兩端各打 6–8 個 throws',ok:true,why:'Fossum p.363 的建議。'},
+    {t:'3-0 絲線連續縫合',ok:false,why:'不可吸收的多股線會形成縫線竇道 (suture sinus)。'},
+    {t:'針距越大越好，2 cm 縫一針',ok:false,why:'針距太大，腸道或網膜可能從縫隙突出，形成疝氣。'}]},
+  {type:'choice',prompt:'第二層：皮下組織怎麼處理？',ref:'Fossum 4e p.363, 793',after:()=>{S.prog.close=2;},options:[
+    {t:'用可吸收線單純連續縫合，消除死腔',ok:true,why:'消除死腔可以減少血清腫 (seroma)。'},
+    {t:'不用縫，直接縫皮膚',ok:false,why:'留下死腔容易形成血清腫。'},
+    {t:'用不可吸收的多股線縫合',ok:false,why:'埋在組織內的不可吸收多股線容易感染、形成瘻管。'}]},
+  {type:'choice',prompt:'第三層：皮膚',ref:'Fossum 4e p.363；Bushby 2020',after:()=>{S.prog.close=3;},options:[
+    {t:'不可吸收單股線間斷縫合（10–14 天拆線），或可吸收線皮內縫合（免拆線）',ok:true,why:'兩者都可以。HQHVSN 常用埋入式皮內縫合，免拆線、也較不會被舔開。'},
+    {t:'用絲線連續縫合後埋在皮內',ok:false,why:'不可吸收的多股線埋在皮內，容易形成瘻管或肉芽腫。'},
+    {t:'皮膚不縫，讓它自己癒合',ok:false,why:'腹部切口一定要關閉；只有公貓去勢的陰囊切口可以開放、二期癒合。'}]},
+  {type:'choice',prompt:'收容所或 TNR 的母貓，術後常在切口旁刺綠色刺青或剪耳，目的是什麼？',ref:'Bushby 2020',options:[
+    {t:'標示「已結紮」，避免日後被誤以為未結紮而再次開腹',ok:true,why:'ASV 建議在切口內或旁邊刺綠色刺青；街貓則剪耳尖。'},
+    {t:'幫助傷口癒合',ok:false,why:'刺青與癒合無關。'},
+    {t:'標示疫苗紀錄',ok:false,why:'它的意義是「已絕育」。'}]}
+  ]},
+/* 15 */{id:'post',title:'術後照護',en:'Post-operative care',sim:0,scene:()=>scenePostop(),
+  ref:'Fossum 4e p.806–808',
+  learn:`<ul><li>持續止痛、每天檢查切口兩次、限制活動到拆線（10–14 天）、戴伊莉莎白頸圈。</li><li>術後 4–6 小時給水，6–12 小時給食（前提是沒有嘔吐）。</li>
+  <li>常見併發症：出血、切口問題（血清腫、感染、裂開、自舔）、卵巢殘留、殘端子宮蓄膿、輸尿管誤紮、肉芽腫或瘻管。</li></ul>`,
+  tasks:[
+  {type:'checklist',prompt:'下列哪些是正確的術後照護？（可複選）',ref:'Fossum 4e p.806',items:()=>[
+    {t:'持續止痛（例：buprenorphine 0.01–0.02 mg/kg q6–12h，頰黏膜給藥）',ok:true,why:'疼痛控制會影響恢復與進食。'},
+    {t:'戴伊莉莎白頸圈，防止舔咬傷口',ok:true,why:'自我傷害是切口裂開的常見原因。'},
+    {t:'每天檢查切口兩次（紅腫、分泌物、裂開）',ok:true,why:'Fossum p.806。'},
+    {t:'限制活動到拆線（10–14 天）',ok:true,why:'減少切口張力。'},
+    {t:'恢復期持續保溫並監測體溫',ok:true,why:P().kitten?'幼貓恢復期特別容易低體溫、低血糖。':'麻醉後仍會持續失溫。'},
+    {t:'術後 4–6 小時給水，6–12 小時給食（沒有嘔吐的話）',ok:true,why:'Fossum p.806。'},
+    {t:'每天給 meloxicam，連續一週',ok:false,why:'貓的 meloxicam 只能給單次（FDA 黑框警告）。'},
+    {t:'例行給抗生素 5 天',ok:false,why:'選擇性 OHE 不需要抗生素（Fossum p.786）。'}]},
+  {type:'choice',prompt:'術後第 4 天，飼主來電說切口突然腫起來，好像有組織從傷口突出。最可能是？',ref:'Fossum 4e p.363, 807',options:[
+    {t:'切口裂開 (dehiscence)，腹腔內容物可能突出，要立即回診',ok:true,why:'裂開常發生在術後 3–5 天，原因多是沒有縫到筋膜、結不牢，或貓自己舔咬。'},
+    {t:'正常的術後腫脹，一個月後再回診',ok:false,why:'有組織突出就是急症。'},
+    {t:'只是過敏，擦藥膏就好',ok:false,why:'可能是腹壁裂開，必須立即處理。'}]},
+  {type:'choice',prompt:'術後 3 個月，飼主發現貓又開始叫春、翹屁股。最可能的原因是？',ref:'Fossum 4e p.807',options:[
+    {t:'卵巢殘留症候群 (ovarian remnant syndrome)：有卵巢組織沒被切除',ok:true,why:'在發情期間開腹探查，比較容易找到殘留的卵巢組織。預防方法：打開卵巢囊，確認整顆卵巢都已切除。'},
+    {t:'結紮後的正常行為',ok:false,why:'完整切除卵巢後就不應再發情。'},
+    {t:'輸尿管被結紮',ok:false,why:'輸尿管誤紮會造成水腎，不會引起發情。'}]}
+  ]}
+];
+
+/* ============================================================
+   風險事件
+   ============================================================ */
+const EVENTS={
+  deep:{title:'麻醉過深',ref:'Fossum 4e Table 27-3',text:()=>'誘導後心跳掉到 100 bpm 以下，呼吸變淺變慢，SpO₂ 下降。你抽的藥量比計算值多。',
+    on(){S.vs.deep=1;},off(){S.vs.deep=0;},choices:[
+    {t:'降低吸入麻醉濃度、給 100% 氧氣、必要時輔助通氣，並考慮用 atipamezole 拮抗 α2 作用',ok:true,why:'先減少麻醉藥，並支持呼吸與循環；dexmedetomidine 可以用 atipamezole 拮抗。'},
+    {t:'追加 ketamine，讓麻醉更穩定',ok:false,why:'會讓麻醉更深。'},
+    {t:'不處理，加快手術速度就好',ok:false,why:'麻醉過深可能導致心跳停止。'}]},
+  light:{title:'麻醉過淺',ref:'Fossum 4e Table 27-3',text:()=>'準備劃刀前，貓的眼瞼反射仍然明顯，四肢動了一下，心跳與呼吸都上升。你抽的藥量不足。',
+    on(){S.vs.light=1;},off(){S.vs.light=0;},choices:[
+    {t:'確認插管與蒸發器，適度提高吸入麻醉濃度並加強止痛，麻醉深度足夠後再劃刀',ok:true,why:'麻醉深度足夠才能開始手術。'},
+    {t:'先劃刀，用疼痛刺激來確認麻醉深度',ok:false,why:'會讓動物感到疼痛，引起交感反應。'},
+    {t:'把四肢綁更緊就好',ok:false,why:'物理保定不能取代麻醉深度。'}]},
+  gut:{title:'勾錯組織',ref:'Fossum 4e p.790',text:()=>'你勾出一段粉紅色的管狀物：表面有一排排弧形的血管（腸繫膜血管弧），而且正在緩慢蠕動。',choices:[
+    {t:'這是小腸。輕輕放回腹腔，重新沿腹壁下鉤',ok:true,why:'子宮角不會蠕動，也沒有腸繫膜血管弧；子宮角會連到卵巢與闊韌帶。'},
+    {t:'這是子宮角，繼續往外拉',ok:false,why:'把腸子當成子宮角處理，會造成嚴重的腸道損傷。'},
+    {t:'把它剪下來送病理',ok:false,why:'這是正常的小腸！'}]},
+  tear:{title:'卵巢血管撕裂',ref:'Fossum 4e p.791, 807',text:()=>'拉扯懸韌帶時力道太大，卵巢蒂旁的血管撕裂，腹腔內湧出鮮血，心跳上升。'+(P().estrus?'（發情期血管怒張，更容易撕裂）':''),
+    on(){S.vs.bleed=1;},off(){S.vs.bleed=0;},choices:[
+    {t:'用紗布壓迫、擦乾視野，看清出血點後再用止血鉗夾住並結紮',ok:true,why:'看清楚再夾，避免夾到輸尿管（Fossum p.807）。'},
+    {t:'朝出血處快速盲夾好幾支止血鉗',ok:false,why:'盲夾可能夾到輸尿管，造成水腎（Fossum p.807）。'},
+    {t:'先繼續手術，最後再處理',ok:false,why:'持續出血會導致低血容。'}]},
+  pbleed:{title:'卵巢蒂殘端出血',ref:'Bushby 2020；Fossum 4e p.807',text:()=>'鬆開中間鉗後，結紮滑脫，殘端噴血並縮回腹腔深處（腎臟後方）。Bushby 2020：學生在訓練初期打的結紮，超過一半沒有完全閉塞血管。',
+    on(){S.vs.bleed=1;},off(){S.vs.bleed=0;},choices:[
+    {t:'需要時往頭側延長切口、用拉鉤牽開，把同側的腸繫膜（右側十二指腸、左側降結腸）往內翻，暴露腎臟尾端；看清殘端與輸尿管後再夾住、重新結紮',ok:true,why:'在良好暴露下找回殘端，是處理卵巢蒂出血的標準方式。'},
+    {t:'在血泊裡盲夾止血鉗',ok:false,why:'這是輸尿管誤紮最常見的原因（Fossum p.807）。'},
+    {t:'塞紗布壓住後直接關腹',ok:false,why:'術後持續內出血可能致命。'}]},
+  ureter:{title:'輸尿管就在旁邊！',ref:'Fossum 4e p.789, 807',text:()=>'膀胱脹滿尿液，把膀胱三角往頭側拉。你在子宮頸旁看到一條細白的管子，緊貼著你準備結紮的位置。（術前沒有排空膀胱）',
+    on(){},off(){S.flags.bladder=true;},choices:[
+    {t:'先輕壓排空膀胱（或以細針抽尿），辨認輸尿管位置，確定它不在結紮範圍內再結紮',ok:true,why:'輸尿管若被結紮，會造成水腎，必須立刻拆除結紮（Fossum p.807）。'},
+    {t:'它很細，一起綁進去沒關係',ok:false,why:'輸尿管被結紮會造成水腎與腎功能喪失。'},
+    {t:'把它剪斷，比較好操作',ok:false,why:'這是輸尿管！剪斷需要進行重建手術。'}]},
+  friable:{title:'子宮撕裂',ref:'Fossum 4e p.793',text:()=>'發情中的子宮又脆又腫。往頭側牽引時，子宮體在結紮處的頭側撕裂，開始滲血。',
+    on(){S.vs.bleed=1;S.prog.torn=true;},off(){S.vs.bleed=0;S.prog.torn=false;},choices:[
+    {t:'立刻用止血鉗輕夾住撕裂的兩端，控制出血；確認子宮頸頭側的結紮完整後再繼續',ok:true,why:'貓的子宮在發情時非常脆弱，牽引與夾鉗都要輕柔（Fossum p.793）。'},
+    {t:'用力把子宮拉出來再處理',ok:false,why:'會讓撕裂擴大。'},
+    {t:'不理它，反正這段要切除',ok:false,why:'撕裂處若在結紮的尾側，就是殘端出血。必須確認並控制。'}]},
+  ubleed:{title:'子宮殘端出血',ref:'Fossum 4e p.807',text:()=>'檢查子宮殘端時，發現結紮沒有完全閉塞子宮動脈，殘端持續滲血。',
+    on(){S.vs.bleed=1;},off(){S.vs.bleed=0;},choices:[
+    {t:'用鑷子穩住殘端，在原結紮尾側重新做貫穿結紮，確認不再出血',ok:true,why:'殘端必須在可控制的狀況下重新結紮。'},
+    {t:'直接放回腹腔，讓它自己止血',ok:false,why:'子宮動脈出血不會自己停止。'},
+    {t:'把子宮頸也一起切除',ok:false,why:'不必要，而且會增加輸尿管損傷的風險。'}]},
+  hypo:{title:'低體溫',ref:'Fossum 4e p.785',text:()=>`食道溫度降到 ${tempNow().toFixed(1)} °C。${P().kitten?'幼貓體表面積大、產熱少，':''}麻醉加上開腹讓體溫持續下降。（擺位時沒有準備保溫）`,
+    on(){},off(){S.flags.warm=true;S.vs.tempFix+=1.4;},choices:[
+    {t:'開啟暖風毯／保溫墊、使用溫熱輸液、縮短手術時間，並持續監測到恢復期',ok:true,why:'低體溫會延遲甦醒、影響凝血與免疫。'},
+    {t:'不用處理，醒來就會恢復',ok:false,why:'低體溫會延遲甦醒，並增加併發症。'},
+    {t:'把熱水袋直接貼在皮膚上',ok:false,why:'麻醉中的動物無法移動，容易燙傷。'}]}
+};
+
+/* ============================================================
+   任務引擎
+   ============================================================ */
+function addError(msg,why,ref,pts){
+  pts=pts||4;const st=STAGE();
+  S.errors.push({stage:`${S.stage+1}. ${st.title}`,msg,why:why||'',ref:ref||st.ref||'',pts});
+  S.score=Math.max(0,S.score-pts); S.simMin+=0.5; if(S.stage>=5&&S.stage<=13) S.opMin+=0.5;
+  S.vs.stress=Math.min(1,S.vs.stress+0.5);
+  updateHUD(); const m=$('.monitor'); if(m){m.classList.add('flash');setTimeout(()=>m.classList.remove('flash'),500);}
+}
+function fbShow(ok,learnHtml,onCont){
+  const fb=$('#fb');if(!fb)return;
+  const body=LEARN()?learnHtml:(ok?'<b>✓ 正確</b>':'<b>✗ 不正確</b>，已記錄錯誤，詳解請見結算畫面。');
+  fb.innerHTML=`<div class="fb ${ok?'good':'bad'}">${body}</div>`+(onCont?`<div class="actions"><button class="btn primary" id="cont">繼續 →</button></div>`:'');
+  if(onCont){$('#cont').onclick=onCont;$('#cont').scrollIntoView({block:'nearest',behavior:'smooth'});}
+}
+const TASK={};
+TASK.checklist=(t,done)=>{
+  const items=shuffle(val(t.items));
+  box.innerHTML=`<h3 class="q">${val(t.prompt)}</h3><div class="opts">${items.map((it,i)=>`<label class="opt"><input type="checkbox" data-i="${i}"><span>${it.t}</span></label>`).join('')}</div>
+  <div class="actions"><button class="btn primary" id="submit">確認送出</button></div><div id="fb"></div>`;
+  $('#submit').onclick=()=>{
+    $('#submit').remove();
+    const wrong=[];
+    $$('input',box).forEach((c,i)=>{
+      const it=items[i],lab=c.closest('.opt');c.disabled=true;
+      if(c.checked&&it.flag) S.flags[it.flag]=true;
+      if(c.checked!==it.ok){wrong.push(it);if(LEARN()||c.checked)lab.classList.add(it.ok?'missed':'wrongpick');}
+      else if(it.ok&&LEARN()) lab.classList.add('right');
+    });
+    wrong.forEach(it=>addError((it.ok?'漏選：':'誤選：')+strip(it.t),it.why,t.ref,3));
+    const html=wrong.length?`<b>✗ 有 ${wrong.length} 項需要修正：</b><ul>${wrong.map(it=>`<li><b>${it.ok?'應該選':'不應該選'}</b>：${it.t}<br><span>${it.why}</span></li>`).join('')}</ul>`
+      :`<b>✓ 全部正確！</b><ul>${items.filter(it=>it.ok).map(it=>`<li>${it.t}<br><span>${it.why}</span></li>`).join('')}</ul>`;
+    fbShow(!wrong.length,html,()=>{t.after&&t.after();done();});
+  };
+};
+TASK.choice=(t,done)=>{
+  const opts=t.noShuffle?val(t.options):shuffle(val(t.options));
+  box.innerHTML=`<h3 class="q">${val(t.prompt)}</h3><div class="opts ${t.grid?'grid':''}">${opts.map((o,i)=>`<button class="opt choice" data-i="${i}">${o.img||''}<span>${o.t}</span></button>`).join('')}</div><div id="fb"></div>`;
+  $$('.choice',box).forEach(b=>b.onclick=()=>{
+    const o=opts[+b.dataset.i];$$('.choice',box).forEach(x=>x.disabled=true);
+    const goods=opts.filter(x=>x.ok);
+    const cont=()=>{t.after&&t.after();done();};
+    if(o.ok){b.classList.add('right');fbShow(true,`<b>✓ 正確。</b>${o.why||''}`,cont);}
+    else{
+      b.classList.add('wrongpick');
+      if(LEARN())opts.forEach((x,i)=>{if(x.ok)$$('.choice',box)[i].classList.add('right');});
+      const g=goods.map(x=>x.t).join('／');
+      addError(`${strip(val(t.prompt))}　→ 選了「${strip(o.t)}」`,`${o.why||''} 正確答案：${strip(g)}。${goods[0]&&goods[0].why||''}`,t.ref);
+      fbShow(false,`<b>✗ 不正確。</b>${o.why||''}<br><b>正確答案：</b>${g}<br>${goods[0]&&goods[0].why||''}`,cont);
+    }
+  });
+};
+TASK.sequence=(t,done)=>{
+  const steps=val(t.steps).map((s,i)=>({...s,idx:i,d:false}));
+  const pool=shuffle(steps.concat((val(t.distractors)||[]).map(s=>({...s,d:true}))));
+  let n=0;const pen=new Set(),base=t.base||0;
+  box.innerHTML=`<h3 class="q">${val(t.prompt)||'依正確順序點選步驟'}</h3><p class="sub">已完成的步驟會依序排在下方；選項中混有錯誤做法。</p><ol class="placed"></ol><div class="pool">${pool.map((s,i)=>`<button class="opt step" data-i="${i}">${s.t}</button>`).join('')}</div><div id="fb"></div>`;
+  const placed=$('.placed',box);
+  $$('.step',box).forEach(b=>b.onclick=()=>{
+    const s=pool[+b.dataset.i];
+    if(!s.d&&s.idx===n){
+      n++;b.remove();placed.insertAdjacentHTML('beforeend',`<li>${s.t}</li>`);
+      if(t.key){S.prog[t.key]=base+n;renderScene();}
+      if(n===steps.length){$$('.step',box).forEach(x=>x.disabled=true);fbShow(true,`<b>✓ 這個階段的步驟完成了。</b>${s.why?'<br>'+s.why:''}`,()=>{t.after&&t.after();done();});}
+      else $('#fb').innerHTML=(LEARN()&&s.why)?`<div class="fb good small">✓ ${s.why}</div>`:'';
+    }else if(s.d){
+      b.disabled=true;b.classList.add('wrongpick');
+      addError(`錯誤步驟：「${s.t}」`,s.why,t.ref);
+      $('#fb').innerHTML=`<div class="fb bad">${LEARN()?`✗ 這是錯誤的做法：${s.why}`:'✗ 錯誤的步驟（已記錄）'}</div>`;
+    }else{
+      if(!pen.has(n)){pen.add(n);addError(`順序錯誤：「${steps[n].t}」之前就選了「${s.t}」`,steps[n].why||'',t.ref,2);}
+      b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);
+      $('#fb').innerHTML=`<div class="fb bad">${LEARN()?'✗ 還不是這一步。想想看：以目前畫面的狀態，下一步該做什麼？':'✗ 順序不對'}</div>`;
+    }
+  });
+};
+TASK.match=(t,done)=>{
+  const pairs=t.pairs,cards=shuffle(pairs),slots=shuffle(pairs);
+  box.innerHTML=`<h3 class="q">${t.prompt}</h3><div class="match"><div class="cards">${cards.map(p=>`<div class="icard" data-id="${p.id}">${instrSVG(p.id)}<span>${p.name}${LEARN()?`<small>${p.en}</small>`:''}</span></div>`).join('')}</div>
+  <div class="slots">${slots.map(p=>`<div class="slot" data-id="${p.id}"><span class="use">${p.use}</span><span class="put"></span></div>`).join('')}</div></div><div id="fb"></div>`;
+  let sel=null,left=pairs.length;const tried=new Set();
+  const clearSel=()=>{sel=null;$$('.icard',box).forEach(c=>c.classList.remove('sel'));};
+  function attempt(cid,slotEl){
+    const sid=slotEl.dataset.id,p=pairs.find(x=>x.id===cid),cardEl=$(`.icard[data-id="${cid}"]`,box);
+    if(cid===sid){
+      slotEl.classList.add('ok');$('.put',slotEl).textContent='✓ '+p.name;cardEl.classList.add('used');left--;
+      $('#fb').innerHTML=LEARN()?`<div class="fb good small">✓ ${p.name}（${p.en}）：${p.use}</div>`:'';
+      if(!left) fbShow(true,'<b>✓ 器械全部配對完成！</b>',()=>done());
+    }else{
+      const key=cid+'>'+sid;
+      if(!tried.has(key)){tried.add(key);addError(`器械配對錯誤：${p.name} ≠「${pairs.find(x=>x.id===sid).use}」`,`${p.name}（${p.en}）的用途：${p.use}`,t.ref,2);}
+      slotEl.classList.add('shake');setTimeout(()=>slotEl.classList.remove('shake'),400);
+      $('#fb').innerHTML=`<div class="fb bad small">${LEARN()?`✗ ${p.name} 不是做這個用的。`:'✗ 配對錯誤'}</div>`;
+    }
+    clearSel();
+  }
+  $$('.icard',box).forEach(c=>{
+    c.addEventListener('pointerdown',e=>{
+      if(c.classList.contains('used'))return;
+      e.preventDefault();const sx=e.clientX,sy=e.clientY;let ghost=null,hov=null;
+      try{c.setPointerCapture(e.pointerId);}catch(_){}
+      const move=ev=>{
+        if(!ghost&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>6){
+          const r=c.getBoundingClientRect();ghost=c.cloneNode(true);ghost.classList.add('ghost');ghost.style.width=r.width+'px';
+          ghost._ox=sx-r.left;ghost._oy=sy-r.top;document.body.appendChild(ghost);
+        }
+        if(ghost){
+          ghost.style.left=(ev.clientX-ghost._ox)+'px';ghost.style.top=(ev.clientY-ghost._oy)+'px';
+          const u=document.elementFromPoint(ev.clientX,ev.clientY),sl=u&&u.closest('.slot');
+          if(hov&&hov!==sl)hov.classList.remove('hover');hov=sl&&!sl.classList.contains('ok')?sl:null;if(hov)hov.classList.add('hover');
+        }
+      };
+      const up=ev=>{
+        c.removeEventListener('pointermove',move);c.removeEventListener('pointerup',up);c.removeEventListener('pointercancel',up);
+        if(hov)hov.classList.remove('hover');
+        if(ghost){ghost.remove();const u=document.elementFromPoint(ev.clientX,ev.clientY),sl=u&&u.closest('.slot');if(sl&&!sl.classList.contains('ok'))attempt(c.dataset.id,sl);}
+        else{const id=c.dataset.id;const was=sel===id;clearSel();if(!was){sel=id;c.classList.add('sel');}}
+      };
+      c.addEventListener('pointermove',move);c.addEventListener('pointerup',up);c.addEventListener('pointercancel',up);
+    });
+  });
+  $$('.slot',box).forEach(sl=>sl.addEventListener('click',()=>{if(sel&&!sl.classList.contains('ok'))attempt(sel,sl);}));
+};
+function svgPt(svg,e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse());}
+function drawMark(svg,p,ok){
+  const c=ok?'#2ecc71':'#ff5a4a';
+  svg.insertAdjacentHTML('beforeend',`<g><circle cx="${f(p.x)}" cy="${f(p.y)}" r="10" fill="none" stroke="${c}" stroke-width="3"/><circle cx="${f(p.x)}" cy="${f(p.y)}" r="2.6" fill="${c}"/></g>`);
+}
+TASK.hotspot=(t,done)=>{
+  box.innerHTML=`<h3 class="q">${val(t.prompt)}</h3><p class="sub">👆 直接點擊上方的手術畫面</p><div id="fb"></div>`;
+  let pen=false;
+  const bind=()=>{
+    const svg=$('#scene svg');svg.classList.add('pick');
+    svg.onclick=e=>{
+      const p=svgPt(svg,e),r=t.judge(p.x,p.y);
+      if(r.ok){
+        svg.onclick=null;t.after&&t.after(p);renderScene();const s2=$('#scene svg');drawMark(s2,p,true);
+        fbShow(true,`<b>✓</b> ${r.msg}`,()=>done());
+      }else{
+        if(!pen){pen=true;addError(`${STAGE().title}：位置錯誤`,r.msg,t.ref);}
+        renderScene();bind();drawMark($('#scene svg'),p,false);
+        $('#fb').innerHTML=`<div class="fb bad">${LEARN()?'✗ '+r.msg:'✗ 位置不正確，再試一次'}</div>`;
+      }
+    };
+  };
+  bind();
+};
+TASK.multispot=(t,done)=>{
+  S.prog.chk=S.prog.chk||{};let pen=false;
+  const list=()=>t.spots.map(s=>`<li>${S.prog.chk[s.id]?'✅':'⬜'} ${s.label}</li>`).join('');
+  box.innerHTML=`<h3 class="q">${t.prompt}</h3><ul class="placed" style="list-style:none;padding-left:0" id="spl">${list()}</ul>
+  <div class="actions"><button class="btn primary" id="closeok">全部確認，準備關腹</button></div><div id="fb"></div>`;
+  const bind=()=>{
+    const svg=$('#scene svg');svg.classList.add('pick');
+    svg.onclick=e=>{
+      const p=svgPt(svg,e),s=t.spots.find(s=>Math.hypot(s.x-p.x,s.y-p.y)<26);if(!s)return;
+      S.prog.chk[s.id]=true;renderScene();bind();$('#spl').innerHTML=list();
+      $('#fb').innerHTML=`<div class="fb good small">✓ ${s.label}：結紮確實、無出血。</div>`;
+    };
+  };
+  bind();
+  $('#closeok').onclick=()=>{
+    if(t.spots.every(s=>S.prog.chk[s.id])){$('#closeok').disabled=true;$('#scene svg').onclick=null;done();}
+    else{
+      if(!pen){pen=true;addError('還沒檢查完所有殘端就準備關腹','關腹前要逐一檢查兩側卵巢蒂與子宮殘端。出血是 OHE 最常見的嚴重併發症（Fossum p.807）。',t.ref);}
+      $('#fb').innerHTML=`<div class="fb bad">✗ 還有殘端沒有檢查！</div>`;
+    }
+  };
+};
+TASK.dose=(t,done)=>{
+  const w=P().weight;
+  box.innerHTML=`<h3 class="q">依 ${P().name} 的體重 ${w} kg，計算 IM 誘導藥物的抽藥量</h3>
+  <p class="sub">抽藥量 (ml) ＝ 體重 (kg) × 劑量 ÷ 濃度。請填到小數點後兩位。</p>
+  <div>${t.rows.map((r,i)=>`<div class="drow" id="dr${i}"><div><b>${r.drug}</b><small>劑量 ${r.dose} ${r.du}・濃度 ${r.cu}</small><div class="ans"></div></div><label><input type="number" step="0.01" min="0" inputmode="decimal" data-i="${i}"> ml</label></div>`).join('')}</div>
+  <div class="actions"><button class="btn primary" id="submit">確認抽藥</button></div><div id="fb"></div>`;
+  $('#submit').onclick=()=>{
+    const ins=$$('input',box),vals=ins.map(x=>parseFloat(x.value));
+    if(vals.some(v=>isNaN(v))){$('#fb').innerHTML='<div class="fb bad small">請填完三種藥物的抽藥量。</div>';return;}
+    $('#submit').remove();let bad=0,hi=false,lo=false;
+    t.rows.forEach((r,i)=>{
+      const c=r.dose*w/r.conc,a=vals[i],ok=Math.abs(a-c)<=Math.max(0.011,c*0.1),row=$('#dr'+i);
+      ins[i].disabled=true;row.classList.add(ok?'ok':'no');
+      if(a>c*1.3)hi=true;if(a<c*0.7)lo=true;
+      if(!ok){bad++;addError(`${r.drug} 劑量計算錯誤：填了 ${a} ml（正確約 ${c.toFixed(2)} ml）`,`${w} kg × ${r.dose} ${r.du} ÷ ${r.conc} = ${c.toFixed(3)} ml`,t.ref,4);}
+      if(LEARN()) $('.ans',row).textContent=`${w} × ${r.dose} ÷ ${r.conc} = ${c.toFixed(3)} ml`;
+    });
+    S.flags.dose=hi?'high':lo?'low':'ok';
+    const per=(0.066).toFixed(3);
+    fbShow(!bad,bad?`<b>✗ 有 ${bad} 項計算錯誤</b>，正確值已列在每一列下方。<br>小技巧：這三種藥的抽藥量剛好都是「每 kg ${per} ml」，所以三支針筒的體積一樣。`
+      :`<b>✓ 計算正確！</b> 有沒有發現三種藥的體積一樣？在這個濃度下，每種藥剛好都是每 kg ${per} ml。`,()=>done());
+  };
+};
+TASK.tension=(t,done)=>{
+  const zone=LEARN()?[55,82]:[60,78],speed=LEARN()?60:85;
+  box.innerHTML=`<h3 class="q">${t.prompt}</h3><p class="sub">打方結時，手要放低、與組織平行拉線（Fossum p.76–77）。太鬆，血管沒有閉塞；太緊，縫線會斷，或切穿組織。</p>
+  <div class="meter"><div class="zone" style="left:${zone[0]}%;width:${zone[1]-zone[0]}%"></div><div class="needle" id="needle"></div><span class="ml">太鬆</span><span class="mr">太緊</span></div>
+  <div class="actions" style="justify-content:center"><button class="btn primary big" id="tie">🪢 收緊 Tighten</button></div><div id="fb"></div>`;
+  let pos=0,dir=1,run=true,last=0;const nd=$('#needle');
+  const step=ts=>{if(!run||!nd.isConnected)return;const dt=last?(ts-last)/1000:0;last=ts;pos+=dir*speed*dt;if(pos>100){pos=100;dir=-1;}if(pos<0){pos=0;dir=1;}nd.style.left=pos+'%';requestAnimationFrame(step);};
+  requestAnimationFrame(step);
+  $('#tie').onclick=()=>{
+    run=false;$('#tie').disabled=true;const v=pos;
+    if(v<zone[0]){
+      S.flags[t.flag]=true;S.prog[t.key]=(t.base||0)+1;renderScene();
+      addError('結紮張力不足','打結時沒有收緊：結紮看起來綁住了，血管其實沒有完全閉塞（Bushby 2020：學生在訓練初期打的結紮，超過 50% 沒有完全閉塞）。','Bushby 2020；Fossum p.76–77',4);
+      fbShow(false,'<b>✗ 太鬆了。</b>結紮看起來綁住了，血管其實沒有完全閉塞。Bushby 2020：學生在訓練初期打的結紮，超過一半沒有完全閉塞血管。',()=>done());
+    }else if(v>zone[1]){
+      addError('結紮過緊','拉力過大：縫線斷裂或切穿組織，必須重綁。','Fossum Ch8 p.76–77',3);
+      const fb=$('#fb');fb.innerHTML=`<div class="fb bad"><b>✗ 太緊了！</b>縫線斷了，必須重綁。</div><div class="actions"><button class="btn" id="retry">重新打結</button></div>`;
+      $('#retry').onclick=()=>TASK.tension(t,done);
+    }else{
+      S.prog[t.key]=(t.base||0)+1;renderScene();
+      fbShow(true,'<b>✓ 張力剛好，結紮牢靠。</b>方結疊加 3–4 個 throws；血管結紮不要用外科結 (surgeon\'s knot)。',()=>done());
+    }
+  };
+};
+TASK.event=(t,done)=>runEvent(t.key,done);
+TASK.info=(t,done)=>{box.innerHTML=t.html+`<div class="actions"><button class="btn primary" id="cont">繼續 →</button></div>`;$('#cont').onclick=done;};
+
+function runEvent(key,done){
+  const ev=EVENTS[key];ev.on&&ev.on();renderScene();paintVitals();S.simMin+=1;
+  const opts=shuffle(ev.choices);let pen=false;
+  const m=document.createElement('div');m.className='modal';
+  m.innerHTML=`<div class="box" role="dialog" aria-modal="true"><div class="tag">⚠ 突發狀況 EVENT</div><h3>${ev.title}</h3><p>${val(ev.text)}</p>
+  <div class="opts">${opts.map((o,i)=>`<button class="opt ech" data-i="${i}">${o.t}</button>`).join('')}</div><div id="efb"></div></div>`;
+  document.body.appendChild(m);
+  $$('.ech',m).forEach(b=>b.onclick=()=>{
+    const o=opts[+b.dataset.i],efb=$('#efb',m);
+    if(o.ok){
+      $$('.ech',m).forEach(x=>x.disabled=true);b.classList.add('right');
+      ev.off&&ev.off();renderScene();paintVitals();
+      efb.innerHTML=`<div class="fb good"><b>✓ 處置正確。</b>${o.why}</div><div class="actions"><button class="btn primary" id="evok">繼續手術 →</button></div>`;
+      $('#evok').onclick=()=>{m.remove();done();};$('#evok').focus();
+    }else{
+      b.disabled=true;b.classList.add('wrongpick');
+      if(!pen){pen=true;addError(`突發狀況「${ev.title}」處置錯誤：${o.t}`,o.why+' 正確處置：'+ev.choices.find(x=>x.ok).t,ev.ref,6);}
+      efb.innerHTML=`<div class="fb bad">${LEARN()?'✗ '+o.why+' 再選一次。':'✗ 不是適當的處置，再選一次。'}</div>`;
+    }
+  });
+}
+
+/* ============================================================
+   畫面
+   ============================================================ */
+const app=$('#app');
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800);}
+function fmtTime(sec){const m=Math.floor(sec/60),s=sec%60;return `${m}:${String(s).padStart(2,'0')}`;}
+function bestText(mode){const b=store.get('ohe-best-'+mode);return b?`最佳成績：${b.score} 分（${b.date}）`:'尚無紀錄';}
+
+function showHome(){
+  stopTicker();
+  app.innerHTML=`<header class="hud"><div class="in"><div class="brand">🐾 貓咪結紮模擬手術台</div></div></header>
+  <main class="wrap">
+    <section class="card hero">
+      <div><p class="eyebrow">獸醫外科術前模擬・FELINE OHE SIMULATOR</p>
+        <h1>母貓卵巢子宮切除術<br><span>Ovariohysterectomy, ventral midline approach</span></h1>
+        <p>走進真正的手術室之前，先在這裡把 15 個步驟、每一把器械、每一個風險都走過一遍。每局會隨機產生不同的病患（成貓／幼貓、是否發情），你的每個決定都會反映在麻醉監視器上。</p>
+        <p style="color:var(--muted);font-size:14px">內容依據 Fossum《Small Animal Surgery》4th ed. (2013)、Bushby (2020) HQHVSN、The Cat Group／AAFP 結紮共識等文獻。</p></div>
+      <div class="hero-art">${sceneTray()}</div>
+    </section>
+    <section class="modes">
+      <div class="card mode"><h3>📖 教學模式</h3><p>每一關附課本重點與頁碼，解剖構造有標示，答錯會立刻看到解釋。適合第一次學習。</p>
+        <button class="btn primary" data-start="learn">開始教學模式</button><div class="best">${bestText('learn')}</div></div>
+      <div class="card mode"><h3>⏱ 考核模式</h3><p>沒有提示，隱藏解剖標示，計分並計時。詳解統一在結算畫面呈現，可以列印成學習單。</p>
+        <button class="btn primary" data-start="exam">開始考核模式</button><div class="best">${bestText('exam')}</div></div>
+    </section>
+    <section class="card flow"><b>手術流程</b><ol>${STAGES.map(s=>`<li>${s.title} <span style="color:var(--muted)">${s.en}</span></li>`).join('')}</ol></section>
+    <section class="more"><button class="btn" id="goKnots">🪢 打結小教室</button><button class="btn" id="goRead">📚 延伸閱讀：側腹入路、公貓去勢、參考文獻</button></section>
+    <p class="disclaimer">⚠ 本遊戲是教學輔助工具。藥物劑量取自 Fossum 4th ed. Table 27-3 等文獻，僅供學習；實際用藥與操作請依授課教師與臨床指導為準。</p>
+    <p class="foot">國立中興大學 教師成長社群計畫・模擬手術台</p>
+  </main>`;
+  $$('[data-start]').forEach(b=>b.onclick=()=>startGame(b.dataset.start));
+  $('#goKnots').onclick=showKnots;$('#goRead').onclick=showReading;
+  window.scrollTo(0,0);
+}
+function startGame(mode){
+  Object.assign(S,{mode,patient:makePatient(),stage:0,task:0,errors:[],score:100,simMin:0,opMin:0,flags:{},prog:{},vs:{bleed:0,light:0,deep:0,stress:0,tempFix:0}});
+  S.start=Date.now();
+  showGame();runStage();startTicker();
+}
+function showGame(){
+  app.innerHTML=`<header class="hud"><div class="in"><div class="brand">🐾 模擬手術台 <span class="chip modechip">${LEARN()?'教學模式':'考核模式'}</span></div>
+    <div class="chips"><span class="chip" id="hStage"></span><span class="chip" id="hScore"></span><span class="chip" id="hTime"></span><button class="btn small" id="hHome">離開</button></div></div></header>
+  <main class="wrap game">
+    <section><div class="card"><div class="stagehead"><div><div class="en" id="stEn"></div><h2 id="stTitle"></h2></div><div class="tc" id="stTask"></div></div>
+      <div class="scene" id="scene"></div><div id="learnBox"></div><div class="taskbox" id="task"></div></div></section>
+    <aside class="side">
+      <div class="monitor"><div class="mon-top"><span>● 麻醉監視器 <span id="mName"></span></span><span id="mDepth" class="depth"></span></div><canvas id="ecg"></canvas>
+        <div class="vit"><div class="v hr" id="vHRb"><small>HR 心跳</small><b id="vHR">--</b><i>bpm</i></div><div class="v sp" id="vSPb"><small>SpO₂</small><b id="vSP">--</b><i>%</i></div>
+        <div class="v rr" id="vRRb"><small>RR 呼吸</small><b id="vRR">--</b><i>/min</i></div><div class="v tp" id="vTb"><small>Temp 體溫</small><b id="vT">--</b><i>°C</i></div></div></div>
+      <div class="card steps"><h4>手術進度</h4><ol id="steps"></ol></div>
+      <div class="card pmini" id="pmini"></div>
+    </aside>
+  </main>`;
+  $('#hHome').onclick=()=>{if(confirm('確定要離開這台手術嗎？目前進度不會保存。')){$$('.modal').forEach(m=>m.remove());showHome();}};
+  const p=P();$('#mName').textContent='— '+p.name;
+  $('#pmini').innerHTML=`<h4>病患 ${p.id}</h4><div class="row"><span>名字</span><b>${p.name}</b></div><div class="row"><span>年齡</span><span>${p.ageText}</span></div><div class="row"><span>體重</span><span>${p.weight} kg</span></div><div class="row"><span>毛色</span><span>${p.coat.n}</span></div>`;
+}
+function updateHUD(){
+  if(!$('#hStage'))return;
+  $('#hStage').textContent=`第 ${S.stage+1} / ${STAGES.length} 關`;
+  $('#hScore').textContent=`分數 ${S.score}`;
+  $('#hTime').textContent=`⏱ ${fmtTime(Math.round((Date.now()-S.start)/1000))}`;
+}
+function renderSteps(){
+  $('#steps').innerHTML=STAGES.map((s,i)=>`<li class="${i<S.stage?'done':i===S.stage?'cur':''}"><span class="n">${i<S.stage?'✓':i+1}</span><span>${s.title}</span></li>`).join('');
+}
+function renderScene(){const st=STAGE();$('#scene').innerHTML=st.scene();}
+function runStage(){
+  const st=STAGE();S.task=0;
+  $('#stEn').textContent=`STEP ${S.stage+1}・${st.en}`;$('#stTitle').textContent=st.title;
+  $('#learnBox').innerHTML=LEARN()?`<details class="learn" ${S.stage<2?'open':''}><summary>📖 課本重點</summary>${st.learn}<div class="refs"><span class="ref">${st.ref}</span></div></details>`:'';
+  renderSteps();updateHUD();renderScene();runTask();
+}
+function runTask(){
+  const st=STAGE(),t=st.tasks[S.task];
+  if(!t)return endStage();
+  if(t.when&&!t.when()){S.task++;return runTask();}
+  box=$('#task');box.innerHTML='';
+  const vis=st.tasks.length;$('#stTask').textContent=`任務 ${Math.min(S.task+1,vis)} / ${vis}`;
+  TASK[t.type](t,()=>{S.task++;runTask();});
+}
+function endStage(){
+  const st=STAGE();S.simMin+=st.sim;if(S.stage>=5&&S.stage<=13)S.opMin+=st.sim;
+  if(S.stage>=STAGES.length-1)return showResults();
+  S.stage++;toast(`✓ 完成：${st.title}`);runStage();
+  const sc=$('.stagehead');if(sc)sc.scrollIntoView({block:'start',behavior:'smooth'});
+}
+
+function showResults(){
+  stopTicker();
+  const p=P(),sec=Math.round((Date.now()-S.start)/1000),sc=S.score;
+  const grade=sc>=90?'優秀':sc>=75?'合格':'需再練習',gc=sc>=90?'var(--good)':sc>=75?'var(--accent)':'var(--bad)';
+  const prev=store.get('ohe-best-'+S.mode);const d=new Date();
+  if(!prev||sc>prev.score) store.set('ohe-best-'+S.mode,{score:sc,date:`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`});
+  const groups={};S.errors.forEach(e=>{(groups[e.stage]=groups[e.stage]||[]).push(e);});
+  const C=2*Math.PI*62;
+  app.innerHTML=`<header class="hud"><div class="in"><div class="brand">🐾 手術結算 <span class="chip modechip">${LEARN()?'教學模式':'考核模式'}</span></div></div></header>
+  <main class="wrap">
+    <section class="card res-top">
+      <svg class="ring" viewBox="0 0 150 150"><circle cx="75" cy="75" r="62" fill="none" stroke="var(--line)" stroke-width="12"/>
+      <circle cx="75" cy="75" r="62" fill="none" stroke="${gc}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${f(C*sc/100)} ${f(C)}" transform="rotate(-90 75 75)"/>
+      <text x="75" y="80" text-anchor="middle" font-size="38" font-weight="700" fill="currentColor">${sc}</text><text x="75" y="104" text-anchor="middle" font-size="14" fill="${gc}" font-weight="700">${grade}</text></svg>
+      <div><h2 style="margin:0 0 4px">${p.name} 的手術完成了</h2><p style="margin:0 0 12px;color:var(--muted)">${p.ageText}・${p.weight} kg・${p.coat.n}${p.estrus?'・發情期':''}${p.kitten?'・幼貓':''}</p>
+      <div class="stats"><div class="stat"><small>錯誤次數</small><b>${S.errors.length}</b></div><div class="stat"><small>實際作答時間</small><b>${fmtTime(sec)}</b></div>
+      <div class="stat"><small>模擬手術時間（劃刀到縫合）</small><b>${Math.round(S.opMin)} 分</b></div><div class="stat"><small>恢復室體溫</small><b>${tempNow().toFixed(1)} °C</b></div></div>
+      <p style="font-size:13.5px;color:var(--muted);margin:10px 0 0">參考：傳統腹中線 OHE 約 20–30 分鐘；熟練者的 1-1-1 側腹技術平均 14.6 分鐘（Talukder 2026）。</p></div>
+    </section>
+    <section class="card errs"><h3 style="margin:0">${S.errors.length?'錯誤回顧與詳解':'🎉 零錯誤！'}</h3>
+      ${S.errors.length?Object.keys(groups).map(k=>`<div class="errgroup"><h4>${k}</h4>${groups[k].map(e=>`<div class="err"><b>${e.msg}</b>　<span style="color:var(--bad)">−${e.pts}</span><div class="why">${e.why}</div>${e.ref?`<div class="r"><span class="ref">${e.ref}</span></div>`:''}</div>`).join('')}</div>`).join('')
+      :'<p>每一個步驟都正確完成。可以試試看考核模式，或換一個病例（幼貓、發情期）再挑戰一次。</p>'}
+    </section>
+    <div class="actions noprint" style="justify-content:center;margin-top:16px">
+      <button class="btn primary" id="again">再來一台（同模式）</button><button class="btn" id="other">改玩${LEARN()?'考核':'教學'}模式</button><button class="btn" id="print">🖨 列印學習單</button><button class="btn" id="home">回首頁</button></div>
+  </main>`;
+  $('#again').onclick=()=>startGame(S.mode);$('#other').onclick=()=>startGame(LEARN()?'exam':'learn');$('#print').onclick=()=>window.print();$('#home').onclick=showHome;
+  window.scrollTo(0,0);
+}
+
+function pageShell(title,body){
+  stopTicker();
+  app.innerHTML=`<header class="hud"><div class="in"><div class="brand">🐾 ${title}</div><div class="chips"><button class="btn small" id="back">← 回首頁</button></div></div></header><main class="wrap">${body}</main>`;
+  $('#back').onclick=showHome;window.scrollTo(0,0);
+}
+function showKnots(){
+  const fig8=`<svg viewBox="0 0 280 120"><rect x="30" y="42" width="220" height="36" rx="18" fill="#f0d69a"/><line x1="40" y1="54" x2="240" y2="54" stroke="#c0392b" stroke-width="2.5"/><line x1="40" y1="66" x2="240" y2="66" stroke="#3b5bab" stroke-width="2.5"/>
+    <path d="M140 60 C140 14 22 14 22 60 C22 106 140 106 140 60 C140 14 258 14 258 60 C258 106 140 106 140 60" fill="none" stroke="#7d4cc2" stroke-width="3"/><circle cx="140" cy="60" r="4" fill="#1b2a28"/>
+    <text x="140" y="114" text-anchor="middle" font-size="11" fill="#333">● 針穿過組織束中央，左右各包一半</text></svg>`;
+  const circ=`<svg viewBox="0 0 280 110"><rect x="30" y="38" width="220" height="36" rx="18" fill="#f0d69a"/><line x1="40" y1="50" x2="240" y2="50" stroke="#c0392b" stroke-width="2.5"/><line x1="40" y1="62" x2="240" y2="62" stroke="#3b5bab" stroke-width="2.5"/>
+    <ellipse cx="90" cy="56" rx="10" ry="26" fill="none" stroke="#7d4cc2" stroke-width="3"/><ellipse cx="130" cy="56" rx="10" ry="26" fill="none" stroke="#7d4cc2" stroke-width="3" stroke-dasharray="4 3"/>
+    <text x="90" y="100" text-anchor="middle" font-size="11" fill="#333">環形結紮（體側）</text><text x="150" y="100" text-anchor="start" font-size="11" fill="#333">貫穿結紮</text></svg>`;
+  const throws=(a,b,c)=>`<svg viewBox="0 0 280 90"><g font-size="13" fill="#333" text-anchor="middle">
+    <rect x="20" y="20" width="110" height="44" rx="10" fill="#e0f0eb" stroke="#1f7a68"/><text x="75" y="40">第 1 throw</text><text x="75" y="56" font-weight="700">${a}</text>
+    <rect x="150" y="20" width="110" height="44" rx="10" fill="${c}" stroke="#1f7a68"/><text x="205" y="40">第 2 throw</text><text x="205" y="56" font-weight="700">${b}</text></g></svg>`;
+  pageShell('打結小教室',`<section class="card page"><h2>🪢 打結小教室 Knot tying</h2>
+  <p>Bushby (2020) 引用的研究指出：<b>學生在訓練初期打的結紮，超過 50% 沒有完全閉塞血管。</b>所以實際上手術檯前，請先把這幾種結打熟。（Fossum 4e Ch8 p.76–82）</p>
+  <div class="knots">
+   <div class="knot good"><h4>✓ 方結 Square knot</h4>${throws('右壓左','左壓右','#e0f0eb')}<p>兩個方向相反的 throw，結會平躺、互相鎖住。血管結紮用方結疊加 3–4 個 throws。</p></div>
+   <div class="knot bad"><h4>✗ 祖母結 Granny knot</h4>${throws('右壓左','右壓左','#fbe8e5')}<p>兩個方向相同的 throw，容易滑動、鬆脫，不可用於結紮。</p></div>
+   <div class="knot"><h4>△ 外科結 Surgeon's knot</h4>${throws('繞兩圈','左壓右','#fcf1dc')}<p>第一個 throw 繞兩圈，摩擦力大、不易鬆開，但比較難把結推到底。<b>Fossum：不建議用於血管結紮。</b></p></div>
+   <div class="knot good"><h4>8 字貫穿結紮 Figure-eight transfixing</h4>${fig8}<ol><li>針（鈍端）從組織束中央穿過。</li><li>繞過一半組織。</li><li>從同一個洞、同一方向再穿一次。</li><li>繞過另一半，打結。</li></ol><p>用於卵巢蒂與子宮體，可防止結紮滑脫。</p></div>
+   <div class="knot"><h4>環形結紮 Circumferential</h4>${circ}<p>在貫穿結紮的體側（殘端側）再加一道。萬一貫穿時針刺破血管，可以靠它控制出血（Fossum p.791）。</p></div>
+   <div class="knot"><h4>Miller's knot（改良式）</h4><ol><li>縫線從子宮體下方穿過，繞回上方，再從下方穿過，在上方形成一個環。</li><li>持針器穿過這個環，長端在持針器上繞一圈。</li><li>夾住短端，持針器往自己的方向拉，長端往反方向拉，同時輕輕往上提。</li><li>最後以 3–4 個方結收尾。</li></ol><p>Bushby 2020：用於子宮體，不需夾鉗。</p></div>
+   <div class="knot"><h4>器械打結要訣 Instrument tie</h4><ul style="padding-left:18px;font-size:14px;margin:4px 0"><li>雙手放低，並與組織平行。</li><li>拉線方向垂直於切口，否則結會翻轉 (tumble)，變成不牢的半結。</li><li>收緊第一個 throw 時，可以「閃一下」鬆開止血鉗，讓結落進溝槽。</li><li>選能勝任的最細縫線，結的安全性較佳。</li></ul></div>
+  </div></section>`);
+}
+function showReading(){
+  pageShell('延伸閱讀',`<section class="card page"><h2>📚 延伸閱讀</h2>
+  <h3>1. 腹中線入路 vs 側腹入路</h3>
+  <div class="tablewrap"><table><tr><th>入路</th><th>切口</th><th>手術時間</th><th>恢復</th><th>併發症</th></tr>
+  <tr><td>傳統腹中線 midline</td><td>3–5 cm</td><td>20–30 分</td><td>7–10 天</td><td>2–5%</td></tr>
+  <tr><td>側腹 flank</td><td>2–4 cm</td><td>18–25 分</td><td>7–9 天</td><td>2–4%</td></tr>
+  <tr><td>腹腔鏡 laparoscopic</td><td>3 個 0.5–1 cm 孔</td><td>25–40 分</td><td>3–5 天</td><td>&lt;2%</td></tr>
+  <tr><td>1-1-1 技術（左側腹）</td><td>0.5–0.7 cm</td><td>14–16 分</td><td>3–7 天</td><td>&lt;1%</td></tr></table></div>
+  <p style="font-size:13px;color:var(--muted)">表格整理自 Talukder et al. 2026, Table 2（文獻比較）。1-1-1 是指子宮、肌肉、皮膚各只縫一針；該研究 40 隻母貓，平均手術時間 14.6 ± 2.4 分鐘，未使用抗生素，無感染或裂開。</p>
+  <ul><li>The Cat Group：英國 96% 的獸醫使用側腹入路，但側腹只快約 1.5 分鐘。</li>
+  <li>腹中線的暴露較好，併發症（例如誤紮輸尿管）較少，疼痛可能也較輕；發情或懷孕的母貓適合腹中線入路。</li>
+  <li>側腹的優點：街貓術後較容易觀察傷口，疤痕位置也可以作為已結紮的標記。</li>
+  <li><b>教學：</b>「用腹中線入路教大學生比較容易，因為有助於正確地教解剖」，但學生兩種技術都應該接觸。</li></ul>
+  <h3>2. OHE vs OVE（只切卵巢）</h3>
+  <p>Fossum 引用 van Goethem 2006：兩者的併發症沒有顯著差異，都可以接受。The Cat Group 認為，貓用腹中線入路做完整 OHE 很容易；側腹入路則「幾乎不可能」切除到子宮頸。</p>
+  <h3>3. 結紮時機</h3>
+  <ul><li>AAFP：早期結紮指 6–14 週，很多獸醫以 1 kg 作為最低體重。</li><li>The Cat Group 建議約 16 週（4 個月）結紮；8–12 週的早期結紮也是安全的。</li><li>Fossum：7 週以上就可以安全結紮。幼貓用 3-0 到 5-0 的結紮線，組織要輕柔處理。</li></ul>
+  <h3>4. 預告：公貓去勢 Feline castration（之後的新關卡）</h3>
+  <ol><li>拔除陰囊毛（16–20 週以下幼貓可以輕剃），採仰臥或側臥，後肢往頭側拉。</li>
+  <li>在每顆睪丸上方、陰囊末端，由頭往尾切開 0.5–1 cm。</li>
+  <li>開放式：切開總鞘膜 (parietal vaginal tunic)，擠出睪丸；用手指分開附睪尾韌帶。</li>
+  <li>結紮方式三選一：(a) 3-0 可吸收線雙重結紮；(b) 精索自體打結（輸精管當一股、血管連睪丸當另一股，打 2–3 個方結）；(c) 用彎 mosquito 做單結／8 字結（Fossum Fig 27-9）。</li>
+  <li>切斷、確認不出血、放回；陰囊切口不縫合，二期癒合。</li></ol>
+  <p style="font-size:13.5px">Al Sad et al. 2025 的病例採開放覆蓋法：2-0 腸線 8 字貫穿結紮，留 4–5 mm 殘端以防滑脫。注意：術後 49 天內輸精管內仍可能有精子（Fossum p.807）。</p>
+  <h3>5. 高品質高量結紮 HQHVSN（Bushby 2020）</h3>
+  <ul><li>某 HQHVSN 中心 7 年完成 71,557 隻貓與 42,349 隻狗的手術，死亡率約只有一般私人診所的 1/10。</li>
+  <li>效率來自流程：雙手術台輪替、每隻動物換手套並使用新的無菌包，加上更精簡的技術（pedicle tie、Miller's knot、小切口）。</li>
+  <li>學生常以雙重結紮、間斷縫合、長切口來彌補經驗不足；熟練之後應該逐步精簡。</li></ul>
+  <h3>參考文獻</h3>
+  <ol style="font-size:14px">
+  <li>Fossum TW. <i>Small Animal Surgery</i>, 4th ed. St. Louis: Elsevier Mosby; 2013. Ch5 (p.38–43), Ch7 (p.53–62), Ch8 (p.64–82), Ch19 (p.363), Ch27 (p.783–808).</li>
+  <li>Bushby PA. High-quality, high-volume spay–neuter: access to care and the challenge to private practitioners. <i>J Feline Med Surg</i> 2020;22:208–215.</li>
+  <li>The Cat Group. Cat neutering practices in the UK; with AAFP Position Statement: Early spay and castration. <i>J Feline Med Surg</i> (Feline Focus), c.2011.</li>
+  <li>Talukder S, et al. The 1-1-1 technique: a modified novel approach to feline ovariohysterectomy with minimal incision, rapid recovery and antibiotic free outcomes. <i>Vet Anim Sci</i> 2026;31:100582.</li>
+  <li>Al Sad A, Haque MM, Lucky NS. Case report: surgical sterilization of a tom cat through open covered method. <i>Res Agric Livest Fish</i> 2025;12(3):501–506.</li></ol>
+  </section>`);
+}
+
+window.addEventListener('error',e=>{document.title='JSERR: '+e.message+' @'+e.lineno;});
+showHome();
+</script>
+</body>
+</html>

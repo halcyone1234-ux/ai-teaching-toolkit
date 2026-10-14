@@ -5,6 +5,6 @@
 - 01 開始使用 AI：Claude Code 入門（Windows / Mac）
 - 02 把 YouTube 影片變成教材（Windows / Mac）
 - 03 放上網路：Git 與 GitHub Pages
-- 04 成果展示：簡報網頁版、互動黑板、教學漫畫、互動推理遊戲
+- 04 成果展示：簡報網頁版、互動黑板、教學漫畫、互動推理遊戲、貓咪結紮模擬手術台
 
 網站：https://halcyone1234-ux.github.io/ai-teaching-toolkit/
